@@ -35,6 +35,36 @@ and the older ToolbarExtender pattern.
 Scenes are stored as GUIDs rather than paths, so renaming or moving a scene does
 not break the list. Nothing here reflects into Unity internals.
 
+## Time Scale
+
+`Editor/TimeScale` drives `Time.timeScale` from the main toolbar.
+
+| Type | Responsibility |
+| --- | --- |
+| `TimeScaleSettings` | Range, step size and play mode behaviour, persisted under `ProjectSettings/`. `Snap` rounds to the nearest step measured from `minimum`, then clamps |
+| `TimeScaleService` | Reads, snaps and clamps `Time.timeScale`; remembers the pre-pause speed in `EditorPrefs`; polls for changes made by gameplay code; reapplies the chosen scale when Play mode starts, since Unity resets it then |
+| `TimeScaleToolbar` | Unity 6000.3+. Three elements at `Middle` index 2/3/4: `MainToolbarToggle` (pause), `MainToolbarSlider`, `MainToolbarButton` (reset) |
+| `TimeScaleLegacyToolbar` | Unity below 6000.3. IMGUI slider registered with `LegacyMainToolbar` |
+| `TimeScaleMenu` | Menu items and the `Alt+T` reset shortcut |
+| `TimeScaleSettingsProvider` | Project Settings page |
+
+`MainToolbarSlider`'s constructor takes `(content, value, min, max, onChanged,
+rounded)` — the value comes *before* the range, which the private field order
+does not suggest.
+
+The three elements are separate because `MainToolbarCustom`, the only element
+type accepting an arbitrary `VisualElement`, is internal to Unity. Below 6000.3
+the IMGUI path draws the whole cluster in one container instead.
+
+## Shared toolbar host
+
+`Editor/Toolbar/LegacyMainToolbar` holds the single reflection path used below
+Unity 6000.3: it finds `UnityEditor.Toolbar`, reads `m_Root`, and adds one
+`IMGUIContainer` to `ToolbarZonePlayMode`. Tools register a draw callback rather
+than each reaching into Unity internals themselves. It re-attaches after play
+mode changes, since the toolbar is rebuilt then, and warns once per session if
+any step fails.
+
 ## Adding a new tool
 
 Runtime code goes under `Runtime/` in the `LiangTools` namespace. Editor-only code goes under `Editor/` in `LiangTools.Editor`; it may reference runtime types, never the reverse.

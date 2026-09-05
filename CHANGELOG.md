@@ -5,6 +5,27 @@ All notable changes to this package are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-09-05
+
+### Added
+
+- Time Scale: a pause toggle, slider and reset button on the main toolbar,
+  driving `Time.timeScale`. The slider snaps to 0.5 steps across a 0 – 2 range
+  by default; range and step are configurable in **Project Settings → Liang
+  Tools → Time Scale**, and a step of 0 gives a continuous slider.
+- Pause remembers the previous speed and restores it on resume; the chosen scale
+  is reapplied when Play mode starts, because Unity resets `Time.timeScale`
+  there.
+- Shortcuts `Alt+T` (reset), `Alt+;` (pause), `Alt+[` / `Alt+]` (one step), plus
+  matching items under `Tools → Liang Tools → Time Scale`.
+- Tests covering the snapping and clamping arithmetic.
+
+### Changed
+
+- The reflection used to reach the pre-6000.3 main toolbar moved into a shared
+  `LegacyMainToolbar` host, so tools register a draw callback instead of each
+  walking Unity internals.
+
 ## [1.1.0] - 2026-09-05
 
 ### Added

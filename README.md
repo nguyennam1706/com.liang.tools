@@ -20,7 +20,7 @@ https://github.com/nguyennam1706/com.liang.tools.git
 Pin to a released version (recommended for production):
 
 ```
-https://github.com/nguyennam1706/com.liang.tools.git#v1.1.0
+https://github.com/nguyennam1706/com.liang.tools.git#v1.2.0
 ```
 
 The SSH remote `git@github.com:nguyennam1706/com.liang.tools.git` works too, and
@@ -35,7 +35,7 @@ Add the entry directly to `Packages/manifest.json`:
 ```json
 {
   "dependencies": {
-    "com.liang.tools": "https://github.com/nguyennam1706/com.liang.tools.git#v1.1.0"
+    "com.liang.tools": "https://github.com/nguyennam1706/com.liang.tools.git#v1.2.0"
   }
 }
 ```
@@ -88,6 +88,29 @@ is public API on all versions. Scenes referenced by GUID survive
 renames and moves; the scene list is cached and rebuilt only when the build
 settings or a `.unity` asset actually change.
 
+### Time Scale
+
+A pause toggle, a slider and a reset button on the main toolbar, right of the
+Scene Switcher, driving `Time.timeScale`.
+
+The slider **snaps to 0.5 steps** over a 0 – 2 range by default, so it lands on
+0, 0.5, 1, 1.5, 2 rather than an arbitrary 1.37. Range and step size are set in
+**Project Settings → Liang Tools → Time Scale**; a step of 0 makes it
+continuous.
+
+- Pause stores the previous speed and restores it on resume.
+- The value follows changes made by gameplay code.
+- Unity resets `Time.timeScale` when Play mode starts, so the chosen scale is
+  reapplied then (switchable in settings).
+
+| Shortcut | Action |
+| --- | --- |
+| `Alt+T` | Reset to 1 |
+| `Alt+;` | Toggle pause |
+| `Alt+[` / `Alt+]` | One step slower / faster |
+
+The same commands live under `Tools → Liang Tools → Time Scale`.
+
 ### About window
 
 `Tools → Liang Tools → About` reports the resolved package version.
@@ -112,8 +135,8 @@ Samples~/         Imported on demand via the Package Manager
 2. Commit, then tag and push:
 
 ```
-git tag v1.1.0
+git tag v1.2.0
 git push origin main --tags
 ```
 
-Consumers install that exact tag with `#v1.1.0`.
+Consumers install that exact tag with `#v1.2.0`.
