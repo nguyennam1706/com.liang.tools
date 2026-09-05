@@ -1,0 +1,13 @@
+.DS_Store
+Thumbs.db
+*.csproj
+*.sln
+*.user
+*.pidb
+*.booproj
+*.svd
+
+# UPM hides folders whose name ends in ~ from Unity's asset database.
+# A global gitignore with `*~` (editor backup files) would drop them from the
+# package, so re-include them explicitly.
+!*~/

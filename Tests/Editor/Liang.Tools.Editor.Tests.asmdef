@@ -1,0 +1,25 @@
+{
+    "name": "Liang.Tools.Editor.Tests",
+    "rootNamespace": "LiangTools.Editor.Tests",
+    "references": [
+        "Liang.Tools",
+        "Liang.Tools.Editor",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

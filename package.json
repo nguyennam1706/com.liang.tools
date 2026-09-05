@@ -1,0 +1,27 @@
+{
+  "name": "com.liang.tools",
+  "displayName": "Liang Tools",
+  "version": "0.1.0",
+  "unity": "2022.3",
+  "description": "A collection of Unity editor and runtime utilities.",
+  "keywords": [
+    "tools",
+    "editor",
+    "utility"
+  ],
+  "author": {
+    "name": "Liang"
+  },
+  "license": "MIT",
+  "documentationUrl": "https://github.com/nguyennam1706/com.liang.tools#readme",
+  "changelogUrl": "https://github.com/nguyennam1706/com.liang.tools/blob/main/CHANGELOG.md",
+  "licensesUrl": "https://github.com/nguyennam1706/com.liang.tools/blob/main/LICENSE.md",
+  "dependencies": {},
+  "samples": [
+    {
+      "displayName": "Basic Usage",
+      "description": "Minimal example showing how to call into Liang Tools from a MonoBehaviour.",
+      "path": "Samples~/BasicUsage"
+    }
+  ]
+}
