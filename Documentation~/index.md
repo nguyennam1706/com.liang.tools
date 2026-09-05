@@ -21,7 +21,8 @@ testable on its own:
 | `SceneSwitcherSettings` | `ScriptableSingleton` persisted under `ProjectSettings/` |
 | `SceneCatalog` | Builds and caches the scene list; invalidated by `EditorBuildSettings.sceneListChanged` and an `AssetPostprocessor` watching `.unity` assets |
 | `SceneSwitcherService` | Opening scenes, save prompts, previous-scene tracking via `SessionState`, menu construction |
-| `SceneSwitcherOverlay` | Scene View overlay, registered with the public `[Overlay]` attribute |
+| `SceneSwitcherToolbar` | Main toolbar dropdown via `[MainToolbarElement]`, docked `Middle` at index 1 — immediately right of the Play mode controls, which occupy `Middle` index 0. Unity 6000.3+ only |
+| `SceneSwitcherOverlay` | Scene View overlay fallback for Unity older than 6000.3, gated behind `#if !UNITY_6000_3_OR_NEWER` |
 | `SceneSwitcherMenu` | Menu items and `ShortcutManager` bindings |
 | `SceneSwitcherSettingsProvider` | Project Settings page |
 

@@ -1,3 +1,4 @@
+#if !UNITY_6000_3_OR_NEWER
 using UnityEditor;
 using UnityEditor.Overlays;
 using UnityEngine;
@@ -70,3 +71,4 @@ namespace LiangTools.Editor.Scenes
         }
     }
 }
+#endif

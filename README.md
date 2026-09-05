@@ -20,7 +20,7 @@ https://github.com/nguyennam1706/com.liang.tools.git
 Pin to a released version (recommended for production):
 
 ```
-https://github.com/nguyennam1706/com.liang.tools.git#v0.2.1
+https://github.com/nguyennam1706/com.liang.tools.git#v1.0.0
 ```
 
 The SSH remote `git@github.com:nguyennam1706/com.liang.tools.git` works too, and
@@ -35,7 +35,7 @@ Add the entry directly to `Packages/manifest.json`:
 ```json
 {
   "dependencies": {
-    "com.liang.tools": "https://github.com/nguyennam1706/com.liang.tools.git#v0.2.1"
+    "com.liang.tools": "https://github.com/nguyennam1706/com.liang.tools.git#v1.0.0"
   }
 }
 ```
@@ -54,14 +54,14 @@ Clone the repository anywhere and add it as a local package via **+ → Install 
 
 Opens any scene in the project without going through the Project window.
 
-- **Scene View overlay** — a dropdown in the Scene View showing the active scene.
-  Enable it from the Scene View overlay menu if it is hidden.
+- **Main toolbar dropdown** — sits next to the Play / Pause / Step controls and
+  shows the active scene. On Unity older than 6000.3 it falls back to a Scene
+  View overlay, since the main toolbar had no public API before that.
 - **Alt+O** — the same dropdown wherever the focus is.
 - **Alt+P** — jump back to the scene you came from.
 - **Tools → Liang Tools → Scenes** — the same commands as menu items.
 
-Holding **Alt** while clicking the overlay opens scenes additively instead of
-replacing the open one. Switching a modified scene prompts to save first.
+Right-clicking the toolbar dropdown gives Refresh and Settings. Switching a modified scene prompts to save first.
 
 Configure it in **Project Settings → Liang Tools → Scene Switcher**:
 
@@ -73,9 +73,10 @@ Configure it in **Project Settings → Liang Tools → Scene Switcher**:
 Settings live in `ProjectSettings/LiangToolsSceneSwitcher.asset`, so the tool
 adds nothing to `Assets/` and the config is shared through version control.
 
-The implementation uses only public editor APIs — `Overlay`, `SettingsProvider`,
-`EditorSceneManager.playModeStartScene`, `ShortcutManager` — so it does not break
-when Unity reworks its internal toolbar. Scenes referenced by GUID survive
+The implementation uses only public editor APIs — `MainToolbarElement`,
+`SettingsProvider`, `EditorSceneManager.playModeStartScene`, `ShortcutManager`.
+Nothing reflects into Unity internals, which is what makes toolbar plugins break
+on editor upgrades. Scenes referenced by GUID survive
 renames and moves; the scene list is cached and rebuilt only when the build
 settings or a `.unity` asset actually change.
 
@@ -103,8 +104,8 @@ Samples~/         Imported on demand via the Package Manager
 2. Commit, then tag and push:
 
 ```
-git tag v0.2.1
+git tag v1.0.0
 git push origin main --tags
 ```
 
-Consumers install that exact tag with `#v0.2.1`.
+Consumers install that exact tag with `#v1.0.0`.
