@@ -21,8 +21,14 @@ testable on its own:
 | `SceneSwitcherSettings` | `ScriptableSingleton` persisted under `ProjectSettings/` |
 | `SceneCatalog` | Builds and caches the scene list; invalidated by `EditorBuildSettings.sceneListChanged` and an `AssetPostprocessor` watching `.unity` assets |
 | `SceneSwitcherService` | Opening scenes, save prompts, previous-scene tracking via `SessionState`, menu construction |
-| `SceneSwitcherToolbar` | Main toolbar dropdown via `[MainToolbarElement]`, docked `Middle` at index 1 — immediately right of the Play mode controls, which occupy `Middle` index 0. Unity 6000.3+ only |
-| `SceneSwitcherOverlay` | Scene View overlay fallback for Unity older than 6000.3, gated behind `#if !UNITY_6000_3_OR_NEWER` |
+| `SceneSwitcherToolbar` | Unity 6000.3+. Main toolbar dropdown via `[MainToolbarElement]`, docked `Middle` at index 1 — immediately right of the Play mode controls, which register as `Middle` index 0. Redrawn with `MainToolbar.Refresh(path)`, which re-invokes the factory method |
+| `SceneSwitcherLegacyToolbar` | Unity below 6000.3. Adds an `IMGUIContainer` to the `ToolbarZonePlayMode` element found through `UnityEditor.Toolbar.m_Root`. Re-attaches after play mode changes, since the toolbar is rebuilt then |
+| `SceneSwitcherOverlay` | Unity below 6000.3. Opt-in Scene View overlay, kept as a safety net if the reflection path ever fails |
+
+Only `SceneSwitcherLegacyToolbar` touches Unity internals, and every step is
+null-checked; failure logs one warning per session and leaves the shortcuts and
+menu working. The injection point is the one used by Scene Switcher Pro (MIT)
+and the older ToolbarExtender pattern.
 | `SceneSwitcherMenu` | Menu items and `ShortcutManager` bindings |
 | `SceneSwitcherSettingsProvider` | Project Settings page |
 

@@ -5,6 +5,25 @@ All notable changes to this package are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-09-05
+
+### Added
+
+- The main toolbar dropdown now works below Unity 6000.3 as well, by adding an
+  `IMGUIContainer` to the toolbar's `ToolbarZonePlayMode`. It re-attaches after
+  play mode changes and logs a single warning if the internals it relies on ever
+  move.
+
+### Fixed
+
+- The Unity 6000.3 dropdown now redraws through `MainToolbar.Refresh`. Assigning
+  `MainToolbarElement.content` on its own did not update the toolbar.
+
+### Changed
+
+- The Scene View overlay is opt-in rather than shown by default; it exists only
+  as a fallback when the toolbar cannot be reached.
+
 ## [1.0.0] - 2026-09-05
 
 First release. Earlier `0.x` tags were removed.

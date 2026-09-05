@@ -6,7 +6,7 @@ using UnityEngine.UIElements;
 
 namespace LiangTools.Editor.Scenes
 {
-    [Overlay(typeof(SceneView), OverlayId, "Scene Switcher", true)]
+    [Overlay(typeof(SceneView), OverlayId, "Scene Switcher")]
     public sealed class SceneSwitcherOverlay : Overlay
     {
         public const string OverlayId = "liangtools-scene-switcher";

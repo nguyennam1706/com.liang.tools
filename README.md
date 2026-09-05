@@ -20,7 +20,7 @@ https://github.com/nguyennam1706/com.liang.tools.git
 Pin to a released version (recommended for production):
 
 ```
-https://github.com/nguyennam1706/com.liang.tools.git#v1.0.0
+https://github.com/nguyennam1706/com.liang.tools.git#v1.1.0
 ```
 
 The SSH remote `git@github.com:nguyennam1706/com.liang.tools.git` works too, and
@@ -35,7 +35,7 @@ Add the entry directly to `Packages/manifest.json`:
 ```json
 {
   "dependencies": {
-    "com.liang.tools": "https://github.com/nguyennam1706/com.liang.tools.git#v1.0.0"
+    "com.liang.tools": "https://github.com/nguyennam1706/com.liang.tools.git#v1.1.0"
   }
 }
 ```
@@ -55,8 +55,7 @@ Clone the repository anywhere and add it as a local package via **+ → Install 
 Opens any scene in the project without going through the Project window.
 
 - **Main toolbar dropdown** — sits next to the Play / Pause / Step controls and
-  shows the active scene. On Unity older than 6000.3 it falls back to a Scene
-  View overlay, since the main toolbar had no public API before that.
+  shows the active scene, on every supported Unity version.
 - **Alt+O** — the same dropdown wherever the focus is.
 - **Alt+P** — jump back to the scene you came from.
 - **Tools → Liang Tools → Scenes** — the same commands as menu items.
@@ -73,10 +72,19 @@ Configure it in **Project Settings → Liang Tools → Scene Switcher**:
 Settings live in `ProjectSettings/LiangToolsSceneSwitcher.asset`, so the tool
 adds nothing to `Assets/` and the config is shared through version control.
 
-The implementation uses only public editor APIs — `MainToolbarElement`,
-`SettingsProvider`, `EditorSceneManager.playModeStartScene`, `ShortcutManager`.
-Nothing reflects into Unity internals, which is what makes toolbar plugins break
-on editor upgrades. Scenes referenced by GUID survive
+Unity only opened the main toolbar to public API in 6000.3, so the dropdown is
+registered two ways:
+
+| Editor | Mechanism |
+| --- | --- |
+| 6000.3 and newer | `[MainToolbarElement]`, refreshed through `MainToolbar.Refresh` |
+| 2022.3 – 6000.2 | An `IMGUIContainer` added to the toolbar's `ToolbarZonePlayMode`, reached by reflection |
+
+The reflection path checks every step and degrades to a single warning if a
+future editor changes those internals; the switcher stays reachable through
+`Alt+O`, the Tools menu, and an opt-in Scene View overlay. Everything else —
+`SettingsProvider`, `EditorSceneManager.playModeStartScene`, `ShortcutManager` —
+is public API on all versions. Scenes referenced by GUID survive
 renames and moves; the scene list is cached and rebuilt only when the build
 settings or a `.unity` asset actually change.
 
@@ -104,8 +112,8 @@ Samples~/         Imported on demand via the Package Manager
 2. Commit, then tag and push:
 
 ```
-git tag v1.0.0
+git tag v1.1.0
 git push origin main --tags
 ```
 
-Consumers install that exact tag with `#v1.0.0`.
+Consumers install that exact tag with `#v1.1.0`.

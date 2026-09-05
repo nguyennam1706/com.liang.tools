@@ -6,45 +6,38 @@ using UnityEngine.UIElements;
 
 namespace LiangTools.Editor.Scenes
 {
+    [InitializeOnLoad]
     public static class SceneSwitcherToolbar
     {
-        private static MainToolbarDropdown _dropdown;
+        public const string ElementPath = "Liang Tools/Scene Switcher";
+
+        static SceneSwitcherToolbar()
+        {
+            SceneSwitcherService.ActiveSceneChanged += Refresh;
+            SceneCatalog.Changed += Refresh;
+        }
 
         [MainToolbarElement(
-            "Liang Tools/Scene Switcher",
+            ElementPath,
             defaultDockPosition = MainToolbarDockPosition.Middle,
             defaultDockIndex = 1,
             ussName = "LiangToolsSceneSwitcher")]
         public static MainToolbarElement Create()
         {
-            if (_dropdown == null)
-            {
-                SceneSwitcherService.ActiveSceneChanged += Refresh;
-                SceneCatalog.Changed += Refresh;
-            }
-
-            _dropdown = new MainToolbarDropdown(BuildContent(), OpenMenu)
-            {
-                populateContextMenu = PopulateContextMenu
-            };
-
-            return _dropdown;
-        }
-
-        private static MainToolbarContent BuildContent()
-        {
-            return new MainToolbarContent(
+            var content = new MainToolbarContent(
                 SceneSwitcherService.ActiveSceneName,
                 EditorGUIUtility.IconContent("SceneAsset Icon").image as Texture2D,
                 "Switch the open scene.\nAlt+O opens this menu, Alt+P returns to the previous scene.");
+
+            return new MainToolbarDropdown(content, OpenMenu)
+            {
+                populateContextMenu = PopulateContextMenu
+            };
         }
 
         private static void Refresh()
         {
-            if (_dropdown != null)
-            {
-                _dropdown.content = BuildContent();
-            }
+            MainToolbar.Refresh(ElementPath);
         }
 
         private static void OpenMenu(Rect rect)
