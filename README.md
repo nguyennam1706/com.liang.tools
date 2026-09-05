@@ -11,17 +11,23 @@ A collection of Unity editor and runtime utilities, distributed as a UPM package
 
 1. Open **Window → Package Manager**.
 2. Click **+ → Install package from git URL…**
-3. Paste one of:
+3. Paste the URL.
+
+This repository is private, so use SSH. The machine needs an SSH key that has
+access to the repository, loaded in `ssh-agent` or the macOS keychain — Unity
+runs `git` with terminal prompts disabled and cannot ask for credentials.
 
 ```
-https://github.com/nguyennam1706/com.liang.tools.git
+git@github.com:nguyennam1706/com.liang.tools.git#v0.1.1
 ```
 
-Pin to a released version (recommended for production):
+`ssh://git@github.com/nguyennam1706/com.liang.tools.git#v0.1.1` works as well.
 
-```
-https://github.com/nguyennam1706/com.liang.tools.git#v0.1.0
-```
+An HTTPS URL only works if a Git credential helper already holds a token for
+`github.com`; otherwise Unity reports
+`fatal: could not read Username for 'https://github.com'`.
+
+Omit the `#v0.1.1` suffix to track the tip of `main` instead of a release.
 
 ### manifest.json
 
@@ -30,12 +36,14 @@ Add the entry directly to `Packages/manifest.json`:
 ```json
 {
   "dependencies": {
-    "com.liang.tools": "https://github.com/nguyennam1706/com.liang.tools.git#v0.1.0"
+    "com.liang.tools": "git@github.com:nguyennam1706/com.liang.tools.git#v0.1.1"
   }
 }
 ```
 
-Git installs require Git to be available on the machine's `PATH`. Unity resolves a Git dependency once and locks the commit hash in `Packages/packages-lock.json`; to move to a newer tag, change the `#tag` and let Unity re-resolve.
+Unity resolves a Git dependency once and locks the commit hash in
+`Packages/packages-lock.json`; to move to a newer tag, change the `#tag` and let
+Unity re-resolve.
 
 ### Local checkout
 
@@ -65,8 +73,8 @@ Samples~/         Imported on demand via the Package Manager
 2. Commit, then tag and push:
 
 ```
-git tag v0.1.0
+git tag v0.1.1
 git push origin main --tags
 ```
 
-Consumers install that exact tag with `#v0.1.0`.
+Consumers install that exact tag with `#v0.1.1`.
