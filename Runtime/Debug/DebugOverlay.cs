@@ -112,6 +112,35 @@ namespace LiangTools.Debugging
             }
         }
 
+        private void OnGUI()
+        {
+            _skin ??= new DebugSkin();
+            _ui ??= new DebugUi(_skin);
+
+            if (!IsOpen)
+            {
+                DetectOpenGesture(Event.current);
+                DrawFpsOverlay();
+                DrawHandle();
+                return;
+            }
+
+            DrawWindow();
+            DrawToast();
+        }
+
+        private void DrawFpsOverlay()
+        {
+            if (!ShowFpsOverlay)
+            {
+                return;
+            }
+
+            var text = $"{Fps.Current:0} FPS  {Fps.FrameTimeMs:0.0} ms";
+            var size = _skin.Overlay.CalcSize(new GUIContent(text));
+            GUI.Label(new Rect(_skin.Scaled(8f), _skin.Scaled(8f), size.x, size.y), text, _skin.Overlay);
+        }
+
         private void DrawHandle()
         {
             if (!ShowHandle)

@@ -20,7 +20,7 @@ https://github.com/nguyennam1706/com.liang.tools.git
 Pin to a released version (recommended for production):
 
 ```
-https://github.com/nguyennam1706/com.liang.tools.git#v1.3.0
+https://github.com/nguyennam1706/com.liang.tools.git#v1.3.1
 ```
 
 The SSH remote `git@github.com:nguyennam1706/com.liang.tools.git` works too, and
@@ -35,7 +35,7 @@ Add the entry directly to `Packages/manifest.json`:
 ```json
 {
   "dependencies": {
-    "com.liang.tools": "https://github.com/nguyennam1706/com.liang.tools.git#v1.3.0"
+    "com.liang.tools": "https://github.com/nguyennam1706/com.liang.tools.git#v1.3.1"
   }
 }
 ```
@@ -216,8 +216,8 @@ Samples~/         Imported on demand via the Package Manager
 2. Commit, then tag and push:
 
 ```
-git tag v1.3.0
+git tag v1.3.1
 git push origin main --tags
 ```
 
-Consumers install that exact tag with `#v1.3.0`.
+Consumers install that exact tag with `#v1.3.1`.

@@ -5,6 +5,15 @@ All notable changes to this package are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.1] - 2026-09-05
+
+### Fixed
+
+- The debug overlay could not be opened at all in 1.3.0. `OnGUI` and
+  `DrawFpsOverlay` were deleted by mistake while removing the gesture progress
+  dots, so nothing was drawn and no taps were read. `Alt+D` still set the open
+  flag, which is why it looked like the overlay was simply not showing.
+
 ## [1.3.0] - 2026-09-05
 
 ### Added
