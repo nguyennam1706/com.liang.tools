@@ -65,6 +65,40 @@ than each reaching into Unity internals themselves. It re-attaches after play
 mode changes, since the toolbar is rebuilt then, and warns once per session if
 any step fails.
 
+## Debug Overlay
+
+`Runtime/Debug` is the only part of the package that ships in a player build.
+
+`DebugOverlay`, `FpsPage` and `SystemInfoPage` — everything that draws or runs —
+are wrapped in `#if UNITY_EDITOR || DEVELOPMENT_BUILD || LIANG_TOOLS_DEBUG`. The
+rest (`LiangDebug`, `IDebugPage`, `DebugUi`, `DebugSkin`, `FpsCounter`,
+`TapGesture`) always compiles so that calling code needs no `#if` of its own; it
+is inert without the overlay. Verified by compiling the runtime assembly with
+`UNITY_EDITOR` removed: 23.5 KB drops to 14.8 KB and the overlay types are gone.
+
+`DebugDefineInstaller` writes `LIANG_TOOLS_DEBUG` into the project's scripting
+defines the first time the package loads, so release builds keep the overlay.
+`DebugDefineSettings` records that it ran, in `ProjectSettings/`, so a define
+removed by hand is not written back. `DebugDefines` reads and writes the symbol
+per `NamedBuildTarget`, and `DebugOverlaySettingsProvider` exposes it.
+
+| Type | Responsibility |
+| --- | --- |
+| `LiangDebug` | Static entry point: page registry (sorted by `Order`), open/close, `IsAvailable` |
+| `IDebugPage` | What a page implements: `Title`, `Order`, `Draw(DebugUi)` |
+| `DebugUi` | Immediate-mode builder — `Section`, `Row`, `CopyRow`, `Button`, `Toggle`, `Slider`. Collapsed sections are remembered per title |
+| `DebugSkin` | Styles built once, scaled by `Screen.dpi` so the overlay stays readable on a phone |
+| `DebugOverlay` | `MonoBehaviour` bootstrapped by `[RuntimeInitializeOnLoadMethod]`, `DontDestroyOnLoad`, owns the FPS sampler, and reads the open gesture from `Event.current` so it is independent of the project's input backend |
+| `TapGesture` | The open sequence, as a flattened list of screen halves. A tap that breaks the sequence restarts it immediately if it matches the first step, rather than forcing a wait for the timeout. No UnityEngine dependency, so it is tested directly |
+| `FpsCounter` | Ring-buffer sampler with a running sum, so `Average` costs one add and one subtract per frame rather than a scan |
+| `FpsPage`, `SystemInfoPage` | The two built-in pages |
+
+The builder API mirrors the shape of a screen-declares-its-own-widgets debugger:
+a page describes rows and sections in `Draw` instead of wiring prefabs. IMGUI was
+chosen over uGUI or UI Toolkit because it needs no prefab, scene, font or
+`PanelSettings` asset — a package with zero asset dependencies installs cleanly
+into any render pipeline.
+
 ## Adding a new tool
 
 Runtime code goes under `Runtime/` in the `LiangTools` namespace. Editor-only code goes under `Editor/` in `LiangTools.Editor`; it may reference runtime types, never the reverse.

@@ -20,7 +20,7 @@ https://github.com/nguyennam1706/com.liang.tools.git
 Pin to a released version (recommended for production):
 
 ```
-https://github.com/nguyennam1706/com.liang.tools.git#v1.2.0
+https://github.com/nguyennam1706/com.liang.tools.git#v1.3.0
 ```
 
 The SSH remote `git@github.com:nguyennam1706/com.liang.tools.git` works too, and
@@ -35,7 +35,7 @@ Add the entry directly to `Packages/manifest.json`:
 ```json
 {
   "dependencies": {
-    "com.liang.tools": "https://github.com/nguyennam1706/com.liang.tools.git#v1.2.0"
+    "com.liang.tools": "https://github.com/nguyennam1706/com.liang.tools.git#v1.3.0"
   }
 }
 ```
@@ -111,6 +111,87 @@ continuous.
 
 The same commands live under `Tools → Liang Tools → Time Scale`.
 
+### Debug Overlay
+
+An in-game overlay for builds and Play mode, drawn with IMGUI so the package
+carries no prefabs, scenes or art. It ships two pages and takes your own.
+
+Opening it, in Play mode:
+
+- Tap **once on the left half, twice on the right, then three times on the
+  left**, each tap within 2 seconds of the last. Taps are read from IMGUI
+  events, so this works whichever input backend the project uses.
+- Press `Alt+D` in the editor, or use `Tools → Liang Tools → Debug Overlay`.
+- Call `LiangDebug.Toggle()` from your own code or your own input binding.
+- Turn on *Show a button to reopen this overlay* on the FPS page to keep a small
+  `≡` button in the top-right corner; the choice persists in `PlayerPrefs`.
+
+The sequence is `TapGesture.DefaultPattern`; pass your own `TapStep[]` to
+`new TapGesture(...)` to change it.
+
+The overlay exists only during Play mode — it is bootstrapped by
+`[RuntimeInitializeOnLoadMethod]`, so nothing shows in edit mode.
+
+**FPS** — current, average, min and max frame rate plus frame time, a reset
+button, and target frame rate / VSync / time scale with 30 · 60 · uncapped
+shortcuts. A compact FPS readout can stay on screen while the overlay is
+closed; that choice persists in `PlayerPrefs`.
+
+**System** — application identity (bundle ID, version, Unity version, install
+mode), device (model, OS, processor, memory, battery), graphics (API, vendor,
+shader level), screen (resolution, DPI, safe area, refresh rate) and managed
+heap size, with a copy button on the values worth pasting into a bug report.
+Buttons for `GC.Collect` and `Resources.UnloadUnusedAssets`.
+
+Adding a page:
+
+```csharp
+public sealed class EconomyPage : IDebugPage
+{
+    public string Title => "Economy";
+    public int Order => 20;
+
+    public void Draw(DebugUi ui)
+    {
+        if (ui.Section("Wallet"))
+        {
+            ui.Row("Coins", Wallet.Coins.ToString());
+            ui.CopyRow("Player ID", Wallet.PlayerId);
+            if (ui.Button("Add 1000")) Wallet.Add(1000);
+        }
+        ui.EndSection();
+    }
+}
+
+LiangDebug.Register(new EconomyPage());
+```
+
+### What reaches a release build
+
+`DebugOverlay` and the built-in pages are wrapped in
+`#if UNITY_EDITOR || DEVELOPMENT_BUILD || LIANG_TOOLS_DEBUG`. Without that define
+a non-development build contains no overlay, no drawing code and no `OnGUI`.
+
+**On first import the package adds `LIANG_TOOLS_DEBUG` to the project's
+Scripting Define Symbols**, for Standalone, Android, iOS, WebGL, tvOS and
+Windows Store — so release builds do include the debug menu. It is written once
+and never re-applied, so removing the define by hand sticks.
+
+Manage it in **Project Settings → Liang Tools → Debug Overlay**: one toggle for
+all targets, or per target. Turning it off restores the stripped behaviour.
+
+> A release build submitted to a store will carry the debug overlay while this
+> define is on. Turn it off before a public release if that is not intended.
+
+What stays compiled either way is the small façade: `LiangDebug` (whose `Open`,
+`Close` and `Toggle` become empty), `IDebugPage`, `DebugUi`, `FpsCounter` and
+`TapGesture`. They are inert, and keeping them means your own `IDebugPage`
+implementations and `LiangDebug.Toggle()` calls still compile without you
+wrapping each one in `#if`.
+
+Measured on this package's runtime assembly: 23.5 KB with the overlay, 14.8 KB
+without. `LiangDebug.IsAvailable` reports which of the two you are in.
+
 ### About window
 
 `Tools → Liang Tools → About` reports the resolved package version.
@@ -135,8 +216,8 @@ Samples~/         Imported on demand via the Package Manager
 2. Commit, then tag and push:
 
 ```
-git tag v1.2.0
+git tag v1.3.0
 git push origin main --tags
 ```
 
-Consumers install that exact tag with `#v1.2.0`.
+Consumers install that exact tag with `#v1.3.0`.

@@ -5,6 +5,40 @@ All notable changes to this package are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-09-05
+
+### Added
+
+- Debug Overlay: a runtime IMGUI overlay with an FPS page and a System page,
+  opened by a left/right tap sequence — once left, twice right, three times left
+  — `Alt+D` in the editor, or `LiangDebug.Toggle()`. Games register their own pages through `IDebugPage` and
+  build rows with `DebugUi`.
+- FPS page reporting current, average, min and max frame rate, frame time, and
+  target frame rate / VSync controls, plus an optional compact readout that
+  stays on screen while the overlay is closed.
+- System page covering application, device, graphics, screen and managed heap,
+  with copy buttons on the identifiers worth pasting into a bug report.
+- An optional `≡` handle in the top-right corner for reopening the overlay,
+  for cases where a corner tap is awkward.
+- On first import the package adds the `LIANG_TOOLS_DEBUG` scripting define to
+  Standalone, Android, iOS, WebGL, tvOS and Windows Store, so release builds
+  include the debug menu. It is applied once, so removing it by hand sticks.
+  **Project Settings → Liang Tools → Debug Overlay** toggles it for all targets
+  or per target.
+- Tests for the FPS ring buffer.
+
+### Notes
+
+- `DebugOverlay` and the built-in pages are wrapped in
+  `#if UNITY_EDITOR || DEVELOPMENT_BUILD || LIANG_TOOLS_DEBUG`, so a release
+  build contains no overlay and no `OnGUI` at all. The `LiangDebug` façade,
+  `IDebugPage`, `DebugUi`, `FpsCounter` and `TapGesture` stay compiled and inert
+  so calling code does not need its own `#if`. With `LIANG_TOOLS_DEBUG` set —
+  the default after import — release builds include the overlay too.
+- The gesture reads IMGUI events rather than an input backend, so it works under
+  the legacy Input Manager, the Input System package, or both. The pattern is
+  configurable through `TapGesture`.
+
 ## [1.2.0] - 2026-09-05
 
 ### Added
