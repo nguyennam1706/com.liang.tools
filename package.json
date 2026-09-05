@@ -1,13 +1,15 @@
 {
   "name": "com.liang.tools",
   "displayName": "Liang Tools",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "unity": "2022.3",
   "description": "A collection of Unity editor and runtime utilities.",
   "keywords": [
     "tools",
     "editor",
-    "utility"
+    "utility",
+    "scene",
+    "workflow"
   ],
   "author": {
     "name": "Liang"

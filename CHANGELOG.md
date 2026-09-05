@@ -5,6 +5,19 @@ All notable changes to this package are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-09-05
+
+### Added
+
+- Scene Switcher: a Scene View overlay, `Alt+O` dropdown and `Tools → Liang Tools
+  → Scenes` menu for opening any scene in the project, with `Alt+P` to return to
+  the previous one and Alt-click for additive loading.
+- Scene sources selectable between Build Settings, the whole project, or a
+  hand-picked list, configured in **Project Settings → Liang Tools → Scene
+  Switcher** and stored in `ProjectSettings/LiangToolsSceneSwitcher.asset`.
+- Optional Play mode start scene override, backed by
+  `EditorSceneManager.playModeStartScene`.
+
 ## [0.1.2] - 2026-09-05
 
 ### Changed

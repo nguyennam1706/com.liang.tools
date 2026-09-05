@@ -11,6 +11,23 @@ Liang Tools ships two assemblies:
 
 Both are auto-referenced, so scripts in `Assembly-CSharp` can use them without editing an asmdef. Code that lives in its own assembly definition must add `Liang.Tools` to its references.
 
+## Scene Switcher
+
+`Editor/Scenes` holds the scene switching tool, split so each piece stays
+testable on its own:
+
+| Type | Responsibility |
+| --- | --- |
+| `SceneSwitcherSettings` | `ScriptableSingleton` persisted under `ProjectSettings/` |
+| `SceneCatalog` | Builds and caches the scene list; invalidated by `EditorBuildSettings.sceneListChanged` and an `AssetPostprocessor` watching `.unity` assets |
+| `SceneSwitcherService` | Opening scenes, save prompts, previous-scene tracking via `SessionState`, menu construction |
+| `SceneSwitcherOverlay` | Scene View overlay, registered with the public `[Overlay]` attribute |
+| `SceneSwitcherMenu` | Menu items and `ShortcutManager` bindings |
+| `SceneSwitcherSettingsProvider` | Project Settings page |
+
+Scenes are stored as GUIDs rather than paths, so renaming or moving a scene does
+not break the list. Nothing here reflects into Unity internals.
+
 ## Adding a new tool
 
 Runtime code goes under `Runtime/` in the `LiangTools` namespace. Editor-only code goes under `Editor/` in `LiangTools.Editor`; it may reference runtime types, never the reverse.
