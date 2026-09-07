@@ -5,6 +5,24 @@ All notable changes to this package are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-09-05
+
+### Added
+
+- Logs page: read the session's log on the device. Capture is off by default —
+  no listener is registered, so a normal player's log calls cost nothing — and
+  the choice is remembered so the next run captures from startup. Filter by
+  type, tap a row for the full message and stack, copy the whole log out.
+- `DebugLogStore` holds the last 300 lines in a fixed ring buffer behind a lock,
+  since logs can arrive off the main thread. Identical consecutive lines
+  collapse into a repeat count; timestamps are formatted on read and cached per
+  second; plain logs drop their stack.
+- Error and warning counts show on the Logs tab through a new optional
+  `IDebugPage.Badge`.
+- `DebugUi` gains `TextBlock`, `Copy`, `Table` (header plus clickable rows,
+  returning the tapped index), a `DebugTone` overload of `Row` that colours the
+  value, and `Button(label, question)` for a two-press confirm.
+
 ## [1.3.1] - 2026-09-05
 
 ### Fixed

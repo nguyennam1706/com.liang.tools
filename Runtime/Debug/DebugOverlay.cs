@@ -70,6 +70,7 @@ namespace LiangTools.Debugging
             _instance = this;
 
             LiangDebug.Register(new FpsPage());
+            LiangDebug.Register(new LogPage());
             LiangDebug.Register(new SystemInfoPage());
         }
 
@@ -203,7 +204,12 @@ namespace LiangTools.Debugging
             for (var i = 0; i < pages.Count; i++)
             {
                 var style = i == _pageIndex ? _skin.ActiveTab : _skin.Tab;
-                if (GUILayout.Button(pages[i].Title, style))
+                var badge = pages[i].Badge;
+                var label = string.IsNullOrEmpty(badge)
+                    ? pages[i].Title
+                    : $"{pages[i].Title}  ({badge})";
+
+                if (GUILayout.Button(label, style))
                 {
                     _pageIndex = i;
                     _scroll = Vector2.zero;

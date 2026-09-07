@@ -69,12 +69,14 @@ any step fails.
 
 `Runtime/Debug` is the only part of the package that ships in a player build.
 
-`DebugOverlay`, `FpsPage` and `SystemInfoPage` — everything that draws or runs —
-are wrapped in `#if UNITY_EDITOR || DEVELOPMENT_BUILD || LIANG_TOOLS_DEBUG`. The
+`DebugOverlay`, `FpsPage`, `LogPage` and `SystemInfoPage` — everything that
+draws or runs — are wrapped in `#if UNITY_EDITOR || DEVELOPMENT_BUILD || LIANG_TOOLS_DEBUG`. The
 rest (`LiangDebug`, `IDebugPage`, `DebugUi`, `DebugSkin`, `FpsCounter`,
-`TapGesture`) always compiles so that calling code needs no `#if` of its own; it
+`TapGesture`, `DebugLogStore`) always compiles so that calling code needs no `#if` of its own; it
 is inert without the overlay. Verified by compiling the runtime assembly with
-`UNITY_EDITOR` removed: 23.5 KB drops to 14.8 KB and the overlay types are gone.
+both defines removed: 34.3 KB drops to 23.0 KB and the overlay types are gone.
+`DebugLogStore` survives, but its `[RuntimeInitializeOnLoadMethod]` is gated too,
+so nothing touches the ring buffer and it is never allocated.
 
 `DebugDefineInstaller` writes `LIANG_TOOLS_DEBUG` into the project's scripting
 defines the first time the package loads, so release builds keep the overlay.
@@ -91,7 +93,8 @@ per `NamedBuildTarget`, and `DebugOverlaySettingsProvider` exposes it.
 | `DebugOverlay` | `MonoBehaviour` bootstrapped by `[RuntimeInitializeOnLoadMethod]`, `DontDestroyOnLoad`, owns the FPS sampler, and reads the open gesture from `Event.current` so it is independent of the project's input backend |
 | `TapGesture` | The open sequence, as a flattened list of screen halves. A tap that breaks the sequence restarts it immediately if it matches the first step, rather than forcing a wait for the timeout. No UnityEngine dependency, so it is tested directly |
 | `FpsCounter` | Ring-buffer sampler with a running sum, so `Average` costs one add and one subtract per frame rather than a scan |
-| `FpsPage`, `SystemInfoPage` | The two built-in pages |
+| `DebugLogStore` | Session log: a fixed 300-entry ring buffer behind a lock, since `Application.logMessageReceivedThreaded` fires off-thread. Repeated lines collapse into a counter instead of taking a slot; timestamp text is built on read and cached per second, never on the capture path; row arrays are pooled because the page re-reads every repaint; plain logs drop their stack. A snapshot of the last read keeps a tapped row index resolving to the same entry when newer lines arrive |
+| `FpsPage`, `LogPage`, `SystemInfoPage` | The three built-in pages |
 
 The builder API mirrors the shape of a screen-declares-its-own-widgets debugger:
 a page describes rows and sections in `Draw` instead of wiring prefabs. IMGUI was

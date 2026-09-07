@@ -22,6 +22,12 @@ namespace LiangTools.Debugging
         public GUIStyle Slider { get; }
         public GUIStyle SliderThumb { get; }
         public GUIStyle Overlay { get; }
+        public GUIStyle TableHeader { get; }
+        public GUIStyle Cell { get; }
+        public GUIStyle TextBlock { get; }
+        public GUIStyle DangerButton { get; }
+        public Texture2D RowHighlight { get; }
+        public Texture2D RowStripe { get; }
 
         public DebugSkin()
         {
@@ -69,6 +75,32 @@ namespace LiangTools.Debugging
                 fixedWidth = Scaled(18f)
             };
 
+            TableHeader = new GUIStyle(Label)
+            {
+                fontStyle = FontStyle.Bold,
+                wordWrap = false,
+                normal = { textColor = new Color(0.68f, 0.72f, 0.78f) }
+            };
+
+            Cell = new GUIStyle(Label) { wordWrap = false, clipping = TextClipping.Clip };
+
+            TextBlock = new GUIStyle(Label)
+            {
+                padding = Pad(6),
+                normal = { background = Solid(new Color(1f, 1f, 1f, 0.05f)), textColor = Color.white }
+            };
+
+            DangerButton = new GUIStyle(GUI.skin.button)
+            {
+                fontSize = body,
+                fontStyle = FontStyle.Bold,
+                padding = Pad(6),
+                normal = { background = Solid(new Color(0.62f, 0.19f, 0.19f, 0.95f)), textColor = Color.white }
+            };
+
+            RowHighlight = Solid(new Color(0.25f, 0.5f, 0.9f, 0.35f));
+            RowStripe = Solid(new Color(1f, 1f, 1f, 0.035f));
+
             Overlay = new GUIStyle(GUI.skin.label)
             {
                 fontSize = Mathf.RoundToInt(14f * _scale),
@@ -76,6 +108,17 @@ namespace LiangTools.Debugging
                 padding = Pad(4),
                 normal = { background = Solid(new Color(0f, 0f, 0f, 0.55f)), textColor = Color.white }
             };
+        }
+
+        public static Color ToneColor(DebugTone tone)
+        {
+            switch (tone)
+            {
+                case DebugTone.Good: return new Color(0.45f, 0.85f, 0.5f);
+                case DebugTone.Warn: return new Color(0.98f, 0.78f, 0.32f);
+                case DebugTone.Bad: return new Color(0.95f, 0.45f, 0.42f);
+                default: return Color.white;
+            }
         }
 
         public float Scaled(float value) => value * _scale;

@@ -20,7 +20,7 @@ https://github.com/nguyennam1706/com.liang.tools.git
 Pin to a released version (recommended for production):
 
 ```
-https://github.com/nguyennam1706/com.liang.tools.git#v1.3.1
+https://github.com/nguyennam1706/com.liang.tools.git#v1.4.0
 ```
 
 The SSH remote `git@github.com:nguyennam1706/com.liang.tools.git` works too, and
@@ -35,7 +35,7 @@ Add the entry directly to `Packages/manifest.json`:
 ```json
 {
   "dependencies": {
-    "com.liang.tools": "https://github.com/nguyennam1706/com.liang.tools.git#v1.3.1"
+    "com.liang.tools": "https://github.com/nguyennam1706/com.liang.tools.git#v1.4.0"
   }
 }
 ```
@@ -114,7 +114,7 @@ The same commands live under `Tools → Liang Tools → Time Scale`.
 ### Debug Overlay
 
 An in-game overlay for builds and Play mode, drawn with IMGUI so the package
-carries no prefabs, scenes or art. It ships two pages and takes your own.
+carries no prefabs, scenes or art. It ships three pages and takes your own.
 
 Opening it, in Play mode:
 
@@ -137,6 +137,21 @@ button, and target frame rate / VSync / time scale with 30 · 60 · uncapped
 shortcuts. A compact FPS readout can stay on screen while the overlay is
 closed; that choice persists in `PlayerPrefs`.
 
+**Logs** — the session's log, read on the device without a cable. Off by
+default: with capture disabled no listener is registered, so a normal player's
+log calls cost nothing. Enable it and the choice is remembered, so the next run
+captures from startup — the page says which of the two you are looking at.
+Filter by log / warning / error, tap a row for the full message and stack, copy
+the whole log to the clipboard. Error and warning counts appear on the tab, so
+something going wrong is visible without opening the page.
+
+It keeps the last 300 lines in a fixed ring buffer, gated by a lock because logs
+can arrive off the main thread. Identical consecutive lines collapse into a
+repeat count, so code logging every frame does not flush the log. Timestamps are
+formatted on read and cached per second rather than per line, and plain logs
+discard their stack — those are most of the lines and holding 300 stacks means
+holding hundreds of KB of strings.
+
 **System** — application identity (bundle ID, version, Unity version, install
 mode), device (model, OS, processor, memory, battery), graphics (API, vendor,
 shader level), screen (resolution, DPI, safe area, refresh rate) and managed
@@ -151,13 +166,17 @@ public sealed class EconomyPage : IDebugPage
     public string Title => "Economy";
     public int Order => 20;
 
+    // Optional: shown on the tab next to the title.
+    public string Badge => Wallet.Coins == 0 ? "empty" : null;
+
     public void Draw(DebugUi ui)
     {
         if (ui.Section("Wallet"))
         {
-            ui.Row("Coins", Wallet.Coins.ToString());
+            ui.Row("Coins", Wallet.Coins.ToString(), DebugTone.Good);
             ui.CopyRow("Player ID", Wallet.PlayerId);
             if (ui.Button("Add 1000")) Wallet.Add(1000);
+            if (ui.Button("Wipe save", "Delete the save file?")) Wallet.Wipe();
         }
         ui.EndSection();
     }
@@ -165,6 +184,12 @@ public sealed class EconomyPage : IDebugPage
 
 LiangDebug.Register(new EconomyPage());
 ```
+
+`DebugUi` offers `Section`, `Label`, `Row` (with an optional `DebugTone` that
+colours the value green / amber / red), `CopyRow`, `TextBlock`, `Button`,
+`Button(label, question)` for a two-press confirm, `Toggle`, `Slider`, `Copy`
+and `Table`. `Table` draws a header plus clickable rows and returns the index
+tapped this frame, or -1.
 
 ### What reaches a release build
 
@@ -216,8 +241,8 @@ Samples~/         Imported on demand via the Package Manager
 2. Commit, then tag and push:
 
 ```
-git tag v1.3.1
+git tag v1.4.0
 git push origin main --tags
 ```
 
-Consumers install that exact tag with `#v1.3.1`.
+Consumers install that exact tag with `#v1.4.0`.

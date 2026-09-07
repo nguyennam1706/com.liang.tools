@@ -4,12 +4,21 @@ using UnityEngine;
 
 namespace LiangTools.Debugging
 {
+    public enum DebugTone
+    {
+        Normal,
+        Good,
+        Warn,
+        Bad
+    }
+
     public sealed class DebugUi
     {
         private readonly HashSet<string> _collapsed = new HashSet<string>();
         private readonly DebugSkin _skin;
 
         private string _openSection;
+        private string _pendingConfirm;
 
         internal DebugUi(DebugSkin skin)
         {
@@ -64,10 +73,109 @@ namespace LiangTools.Debugging
 
         public void Row(string key, string value)
         {
+            Row(key, value, DebugTone.Normal);
+        }
+
+        public void Row(string key, string value, DebugTone tone)
+        {
             GUILayout.BeginHorizontal();
             GUILayout.Label(key, _skin.Key);
-            GUILayout.Label(value ?? "—", _skin.Value);
+
+            using (new GuiColorScope(DebugSkin.ToneColor(tone)))
+            {
+                GUILayout.Label(value ?? "—", _skin.Value);
+            }
+
             GUILayout.EndHorizontal();
+        }
+
+        public void TextBlock(string text)
+        {
+            GUILayout.Label(string.IsNullOrEmpty(text) ? "—" : text, _skin.TextBlock);
+        }
+
+        public void Copy(string label, string value)
+        {
+            using (new GuiEnabledScope(!string.IsNullOrEmpty(value)))
+            {
+                if (GUILayout.Button(label, _skin.Button))
+                {
+                    GUIUtility.systemCopyBuffer = value;
+                    Toast($"Copied {value.Length} characters");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Draws a header row plus one row per entry and returns the index of the row
+        /// clicked this frame, or -1. Widths apply to the leading columns; the last
+        /// column takes the remaining space.
+        /// </summary>
+        public int Table(string[] headers, IList<string[]> rows, int selected, params float[] widths)
+        {
+            var clicked = -1;
+
+            if (headers != null && headers.Length > 0)
+            {
+                GUILayout.BeginHorizontal();
+                for (var column = 0; column < headers.Length; column++)
+                {
+                    GUILayout.Label(headers[column], _skin.TableHeader, ColumnOption(column, headers.Length, widths));
+                }
+
+                GUILayout.EndHorizontal();
+            }
+
+            if (rows == null || rows.Count == 0)
+            {
+                GUILayout.Label("No rows.", _skin.Label);
+                return clicked;
+            }
+
+            for (var index = 0; index < rows.Count; index++)
+            {
+                var row = rows[index];
+                if (row == null)
+                {
+                    continue;
+                }
+
+                GUILayout.BeginHorizontal();
+                for (var column = 0; column < row.Length; column++)
+                {
+                    GUILayout.Label(row[column], _skin.Cell, ColumnOption(column, row.Length, widths));
+                }
+
+                GUILayout.EndHorizontal();
+
+                var rect = GUILayoutUtility.GetLastRect();
+                var background = index == selected
+                    ? _skin.RowHighlight
+                    : index % 2 == 1 ? _skin.RowStripe : null;
+
+                if (background != null && Event.current.type == EventType.Repaint)
+                {
+                    GUI.DrawTexture(rect, background);
+                }
+
+                if (Event.current.type == EventType.MouseDown && rect.Contains(Event.current.mousePosition))
+                {
+                    clicked = index;
+                    Event.current.Use();
+                }
+            }
+
+            return clicked;
+        }
+
+        private GUILayoutOption ColumnOption(int column, int columnCount, float[] widths)
+        {
+            if (widths != null && column < widths.Length && column < columnCount - 1)
+            {
+                return GUILayout.Width(_skin.Scaled(widths[column]));
+            }
+
+            return GUILayout.ExpandWidth(true);
         }
 
         public void CopyRow(string key, string value)
@@ -81,9 +189,7 @@ namespace LiangTools.Debugging
                 if (GUILayout.Button("copy", _skin.SmallButton, GUILayout.Width(_skin.Scaled(52f))))
                 {
                     GUIUtility.systemCopyBuffer = value;
-#if UNITY_EDITOR || DEVELOPMENT_BUILD || LIANG_TOOLS_DEBUG
-                    DebugOverlay.Instance?.Toast($"Copied {key}");
-#endif
+                    Toast($"Copied {key}");
                 }
             }
 
@@ -93,6 +199,40 @@ namespace LiangTools.Debugging
         public bool Button(string label)
         {
             return GUILayout.Button(label, _skin.Button);
+        }
+
+        /// <summary>
+        /// A button that asks before acting: the first press swaps it for the question,
+        /// and only pressing that returns true.
+        /// </summary>
+        public bool Button(string label, string confirmQuestion)
+        {
+            if (string.IsNullOrEmpty(confirmQuestion))
+            {
+                return Button(label);
+            }
+
+            if (_pendingConfirm != label)
+            {
+                if (GUILayout.Button(label, _skin.Button))
+                {
+                    _pendingConfirm = label;
+                }
+
+                return false;
+            }
+
+            GUILayout.BeginHorizontal();
+            var confirmed = GUILayout.Button(confirmQuestion, _skin.DangerButton);
+            var cancelled = GUILayout.Button("Cancel", _skin.Button, GUILayout.Width(_skin.Scaled(80f)));
+            GUILayout.EndHorizontal();
+
+            if (confirmed || cancelled)
+            {
+                _pendingConfirm = null;
+            }
+
+            return confirmed;
         }
 
         public bool Toggle(string label, bool value)
@@ -113,6 +253,29 @@ namespace LiangTools.Debugging
         public void Separator()
         {
             GUILayout.Space(_skin.Scaled(6f));
+        }
+
+        private static void Toast(string message)
+        {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD || LIANG_TOOLS_DEBUG
+            DebugOverlay.Instance?.Toast(message);
+#endif
+        }
+
+        private readonly struct GuiColorScope : IDisposable
+        {
+            private readonly Color _previous;
+
+            public GuiColorScope(Color color)
+            {
+                _previous = GUI.contentColor;
+                GUI.contentColor = color;
+            }
+
+            public void Dispose()
+            {
+                GUI.contentColor = _previous;
+            }
         }
 
         private readonly struct GuiEnabledScope : IDisposable
