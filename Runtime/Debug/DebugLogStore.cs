@@ -204,6 +204,12 @@ namespace LiangTools.Debugging
             Clear();
             IsCapturingFromStart = false;
 
+            // The listener is a static delegate, so without this it keeps running after
+            // Play mode ends and captures the editor's own log lines. In the editor
+            // Application.quitting fires when Play mode exits.
+            Application.quitting -= HandleQuitting;
+            Application.quitting += HandleQuitting;
+
             if (!IsCaptureRemembered)
             {
                 return;
@@ -211,6 +217,13 @@ namespace LiangTools.Debugging
 
             Subscribe();
             IsCapturingFromStart = true;
+        }
+
+        private static void HandleQuitting()
+        {
+            Unsubscribe();
+            Clear();
+            IsCapturingFromStart = false;
         }
 #endif
 

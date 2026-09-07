@@ -46,6 +46,14 @@ namespace LiangTools.Debugging
             }
         }
 
+#if UNITY_EDITOR
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetForDomainReload()
+        {
+            _instance = null;
+        }
+#endif
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Bootstrap()
         {
@@ -54,7 +62,10 @@ namespace LiangTools.Debugging
                 return;
             }
 
-            var host = new GameObject("[Liang Debug Overlay]") { hideFlags = HideFlags.HideAndDontSave };
+            // HideInHierarchy only: HideFlags.HideAndDontSave carries DontSaveInEditor,
+            // and Unity does not clean those up when Play mode ends, so the host
+            // survived into edit mode and another one was created on every run.
+            var host = new GameObject("[Liang Debug Overlay]") { hideFlags = HideFlags.HideInHierarchy };
             DontDestroyOnLoad(host);
             host.AddComponent<DebugOverlay>();
         }
@@ -79,6 +90,21 @@ namespace LiangTools.Debugging
             if (_instance == this)
             {
                 _instance = null;
+            }
+        }
+
+        private void DestroySelf()
+        {
+            IsOpen = false;
+
+            if (Application.isPlaying)
+            {
+                Destroy(gameObject);
+            }
+            else
+            {
+                // Destroy() is a no-op outside Play mode and logs a warning.
+                DestroyImmediate(gameObject);
             }
         }
 
@@ -115,6 +141,14 @@ namespace LiangTools.Debugging
 
         private void OnGUI()
         {
+            // Belt and braces: if a host from an earlier session ever outlives Play
+            // mode again, it removes itself instead of drawing over the editor.
+            if (!Application.isPlaying)
+            {
+                DestroySelf();
+                return;
+            }
+
             _skin ??= new DebugSkin();
             _ui ??= new DebugUi(_skin);
 

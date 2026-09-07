@@ -42,6 +42,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - The closed-overlay FPS readout is colour-coded by frame rate, and copy
     confirmations appear as an accent toast.
 
+### Fixed
+
+- The overlay's host object outlived Play mode. It was created with
+  `HideFlags.HideAndDontSave`, which carries `DontSaveInEditor`, and Unity does
+  not clean those up when Play mode ends — so the object survived into edit mode
+  and a new one was added on every run. It now uses `HideFlags.HideInHierarchy`,
+  removes itself if it ever finds itself outside Play mode, and clears its
+  static instance on domain reload.
+- `DebugLogStore` kept its `Application.logMessageReceivedThreaded` listener
+  after Play mode ended, capturing the editor's own log lines into the ring
+  buffer. It now detaches and clears on `Application.quitting`, which the editor
+  raises when Play mode exits.
+
 ## [1.3.1] - 2026-09-05
 
 ### Fixed
