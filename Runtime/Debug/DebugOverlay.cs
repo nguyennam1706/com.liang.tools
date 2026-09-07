@@ -137,9 +137,14 @@ namespace LiangTools.Debugging
                 return;
             }
 
-            var text = $"{Fps.Current:0} FPS  {Fps.FrameTimeMs:0.0} ms";
+            var text = $"{Fps.Current:0} fps · {Fps.FrameTimeMs:0.0} ms";
             var size = _skin.Overlay.CalcSize(new GUIContent(text));
-            GUI.Label(new Rect(_skin.Scaled(8f), _skin.Scaled(8f), size.x, size.y), text, _skin.Overlay);
+            var rect = new Rect(_skin.Scaled(10f), _skin.Scaled(10f), size.x, size.y);
+
+            using (new GuiColorScope(DebugSkin.ToneColor(RateTone(Fps.Current))))
+            {
+                GUI.Label(rect, text, _skin.Overlay);
+            }
         }
 
         private void DrawHandle()
@@ -149,9 +154,9 @@ namespace LiangTools.Debugging
                 return;
             }
 
-            var size = _skin.Scaled(34f);
-            var rect = new Rect(Screen.width - size - _skin.Scaled(8f), _skin.Scaled(8f), size, size);
-            if (GUI.Button(rect, "≡", _skin.Button))
+            var size = _skin.Scaled(38f);
+            var rect = new Rect(Screen.width - size - _skin.Scaled(10f), _skin.Scaled(10f), size, size);
+            if (GUI.Button(rect, "≡", _skin.Handle))
             {
                 SetOpen(true);
             }
@@ -159,64 +164,104 @@ namespace LiangTools.Debugging
 
         private void DrawWindow()
         {
-            var margin = _skin.Scaled(12f);
+            // Dim the game behind the panel: over a bright scene the translucent panel
+            // alone left the text hard to read.
+            GUI.Label(new Rect(0f, 0f, Screen.width, Screen.height), GUIContent.none, _skin.Scrim);
+
+            var margin = _skin.Scaled(14f);
             var area = new Rect(margin, margin, Screen.width - margin * 2f, Screen.height - margin * 2f);
 
-            GUILayout.BeginArea(area, _skin.Window);
+            GUILayout.BeginArea(area, GUIContent.none, _skin.Window);
 
             var pages = LiangDebug.RegisteredPages;
-            DrawHeader(pages.Count);
+            DrawHeader(pages);
 
             if (pages.Count > 0)
             {
                 _pageIndex = Mathf.Clamp(_pageIndex, 0, pages.Count - 1);
-                DrawTabs(pages);
+                DrawTabs(pages, area.width - _skin.Scaled(28f));
 
-                _scroll = GUILayout.BeginScrollView(_scroll);
+                _scroll = GUILayout.BeginScrollView(_scroll, GUIStyle.none, GUI.skin.verticalScrollbar);
                 pages[_pageIndex].Draw(_ui);
                 _ui.EndSection();
+                GUILayout.Space(_skin.Scaled(8f));
                 GUILayout.EndScrollView();
             }
             else
             {
-                GUILayout.Label("No debug pages registered.", _skin.Label);
+                GUILayout.Label("No debug pages registered.", _skin.Key);
             }
 
             GUILayout.EndArea();
         }
 
-        private void DrawHeader(int pageCount)
+        private void DrawHeader(System.Collections.Generic.IReadOnlyList<IDebugPage> pages)
         {
             GUILayout.BeginHorizontal();
-            GUILayout.Label($"<b>Liang Debug</b>  ·  {pageCount} page(s)", _skin.Label);
+
+            GUILayout.BeginVertical();
+            GUILayout.Label("Liang Debug", _skin.Title);
+            GUILayout.Label(
+                $"{Fps.Current:0} fps · {Fps.FrameTimeMs:0.0} ms · {pages.Count} pages · {Application.version}",
+                _skin.Subtitle);
+            GUILayout.EndVertical();
+
             GUILayout.FlexibleSpace();
-            if (GUILayout.Button("✕", _skin.Button, GUILayout.Width(_skin.Scaled(40f))))
+
+            if (GUILayout.Button("✕", _skin.Close, GUILayout.Width(_skin.Scaled(30f))))
             {
                 SetOpen(false);
             }
 
             GUILayout.EndHorizontal();
+            GUILayout.Space(_skin.Scaled(6f));
         }
 
-        private void DrawTabs(System.Collections.Generic.IReadOnlyList<IDebugPage> pages)
+        // Tabs wrap onto further rows rather than shrinking, so a project that
+        // registers a dozen pages stays legible on a phone.
+        private void DrawTabs(System.Collections.Generic.IReadOnlyList<IDebugPage> pages, float available)
         {
-            GUILayout.BeginHorizontal();
+            var used = 0f;
+            var open = false;
+
             for (var i = 0; i < pages.Count; i++)
             {
-                var style = i == _pageIndex ? _skin.ActiveTab : _skin.Tab;
                 var badge = pages[i].Badge;
                 var label = string.IsNullOrEmpty(badge)
                     ? pages[i].Title
-                    : $"{pages[i].Title}  ({badge})";
+                    : $"{pages[i].Title}  {badge}";
 
-                if (GUILayout.Button(label, style))
+                var style = i == _pageIndex ? _skin.ActiveTab : _skin.Tab;
+                var width = style.CalcSize(new GUIContent(label)).x + _skin.Scaled(4f);
+
+                if (!open || used + width > available)
+                {
+                    if (open)
+                    {
+                        GUILayout.EndHorizontal();
+                    }
+
+                    GUILayout.BeginHorizontal();
+                    open = true;
+                    used = 0f;
+                }
+
+                if (GUILayout.Button(label, style, GUILayout.Width(width)))
                 {
                     _pageIndex = i;
                     _scroll = Vector2.zero;
                 }
+
+                used += width;
             }
 
-            GUILayout.EndHorizontal();
+            if (open)
+            {
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
+            }
+
+            GUILayout.Space(_skin.Scaled(4f));
         }
 
         private void DrawToast()
@@ -226,9 +271,35 @@ namespace LiangTools.Debugging
                 return;
             }
 
-            var size = _skin.Overlay.CalcSize(new GUIContent(_toast));
-            var rect = new Rect((Screen.width - size.x) * 0.5f, Screen.height - size.y - _skin.Scaled(40f), size.x, size.y);
-            GUI.Label(rect, _toast, _skin.Overlay);
+            var size = _skin.Toast.CalcSize(new GUIContent(_toast));
+            var rect = new Rect((Screen.width - size.x) * 0.5f, Screen.height - size.y - _skin.Scaled(48f), size.x, size.y);
+            GUI.Label(rect, _toast, _skin.Toast);
+        }
+
+        private static DebugTone RateTone(float fps)
+        {
+            if (fps <= 0f)
+            {
+                return DebugTone.Normal;
+            }
+
+            return fps >= 55f ? DebugTone.Good : fps >= 28f ? DebugTone.Warn : DebugTone.Bad;
+        }
+
+        private readonly struct GuiColorScope : System.IDisposable
+        {
+            private readonly Color _previous;
+
+            public GuiColorScope(Color color)
+            {
+                _previous = GUI.contentColor;
+                GUI.contentColor = color;
+            }
+
+            public void Dispose()
+            {
+                GUI.contentColor = _previous;
+            }
         }
     }
 }

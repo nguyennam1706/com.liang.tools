@@ -23,6 +23,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   returning the tapped index), a `DebugTone` overload of `Row` that colours the
   value, and `Button(label, question)` for a two-press confirm.
 
+### Changed
+
+- Reworked the overlay's appearance. It no longer inherits `GUI.skin`, which was
+  what made it look like a built-in editor window dropped into the game: grey
+  boxes, square borders and tabs that read as ordinary buttons.
+  - Backgrounds are generated as antialiased nine-slice rounded rectangles, so
+    corners stay crisp at any size and on any DPI.
+  - A header with the title over a live subtitle (fps, frame time, page count,
+    app version), and a scrim behind the panel so a bright scene does not fight
+    the text.
+  - Tabs are pills, the active one filled with the accent colour, and they wrap
+    onto further rows instead of shrinking when a project registers many pages.
+  - Section headers are flat with an accent bar down the left rather than
+    buttons, so a page reads as structure instead of a stack of controls.
+  - Key/value rows alternate background, the key is muted and the value is
+    right-aligned; toggles are ON/OFF pills instead of checkboxes.
+  - The closed-overlay FPS readout is colour-coded by frame rate, and copy
+    confirmations appear as an accent toast.
+
 ## [1.3.1] - 2026-09-05
 
 ### Fixed

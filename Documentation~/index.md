@@ -89,7 +89,7 @@ per `NamedBuildTarget`, and `DebugOverlaySettingsProvider` exposes it.
 | `LiangDebug` | Static entry point: page registry (sorted by `Order`), open/close, `IsAvailable` |
 | `IDebugPage` | What a page implements: `Title`, `Order`, `Draw(DebugUi)` |
 | `DebugUi` | Immediate-mode builder — `Section`, `Row`, `CopyRow`, `Button`, `Toggle`, `Slider`. Collapsed sections are remembered per title |
-| `DebugSkin` | Styles built once, scaled by `Screen.dpi` so the overlay stays readable on a phone |
+| `DebugSkin` | Every style, built once and scaled by `Screen.dpi`. Nothing inherits `GUI.skin`. Backgrounds are generated textures: `Rounded` builds a nine-slice rounded rectangle of side `2r+1` with `border = r`, so the single middle pixel stretches while the corners stay sharp; corner coverage comes from the signed distance to the shape's edge, clamped to one pixel, which is what antialiases it |
 | `DebugOverlay` | `MonoBehaviour` bootstrapped by `[RuntimeInitializeOnLoadMethod]`, `DontDestroyOnLoad`, owns the FPS sampler, and reads the open gesture from `Event.current` so it is independent of the project's input backend |
 | `TapGesture` | The open sequence, as a flattened list of screen halves. A tap that breaks the sequence restarts it immediately if it matches the first step, rather than forcing a wait for the timeout. No UnityEngine dependency, so it is tested directly |
 | `FpsCounter` | Ring-buffer sampler with a running sum, so `Average` costs one add and one subtract per frame rather than a scan |

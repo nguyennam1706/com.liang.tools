@@ -19,6 +19,7 @@ namespace LiangTools.Debugging
 
         private string _openSection;
         private string _pendingConfirm;
+        private int _rowIndex;
 
         internal DebugUi(DebugSkin skin)
         {
@@ -30,9 +31,9 @@ namespace LiangTools.Debugging
             EndSection();
 
             var expanded = !_collapsed.Contains(title);
-            var arrow = expanded ? "▼" : "▶";
+            var arrow = expanded ? "▾" : "▸";
 
-            if (GUILayout.Button($"{arrow}  {title}", _skin.Section))
+            if (GUILayout.Button($"{arrow}   {title}", _skin.Section))
             {
                 if (expanded)
                 {
@@ -49,6 +50,7 @@ namespace LiangTools.Debugging
             if (expanded)
             {
                 _openSection = title;
+                _rowIndex = 0;
                 GUILayout.BeginVertical(_skin.SectionBody);
             }
 
@@ -78,12 +80,32 @@ namespace LiangTools.Debugging
 
         public void Row(string key, string value, DebugTone tone)
         {
-            GUILayout.BeginHorizontal();
+            GUILayout.BeginHorizontal(NextRowStyle());
             GUILayout.Label(key, _skin.Key);
+            GUILayout.FlexibleSpace();
 
             using (new GuiColorScope(DebugSkin.ToneColor(tone)))
             {
                 GUILayout.Label(value ?? "—", _skin.Value);
+            }
+
+            GUILayout.EndHorizontal();
+        }
+
+        public void CopyRow(string key, string value)
+        {
+            GUILayout.BeginHorizontal(NextRowStyle());
+            GUILayout.Label(key, _skin.Key);
+            GUILayout.FlexibleSpace();
+            GUILayout.Label(value ?? "—", _skin.Value);
+
+            using (new GuiEnabledScope(!string.IsNullOrEmpty(value)))
+            {
+                if (GUILayout.Button("copy", _skin.SmallButton, GUILayout.Width(_skin.Scaled(48f))))
+                {
+                    GUIUtility.systemCopyBuffer = value;
+                    Toast($"Copied {key}");
+                }
             }
 
             GUILayout.EndHorizontal();
@@ -104,96 +126,6 @@ namespace LiangTools.Debugging
                     Toast($"Copied {value.Length} characters");
                 }
             }
-        }
-
-        /// <summary>
-        /// Draws a header row plus one row per entry and returns the index of the row
-        /// clicked this frame, or -1. Widths apply to the leading columns; the last
-        /// column takes the remaining space.
-        /// </summary>
-        public int Table(string[] headers, IList<string[]> rows, int selected, params float[] widths)
-        {
-            var clicked = -1;
-
-            if (headers != null && headers.Length > 0)
-            {
-                GUILayout.BeginHorizontal();
-                for (var column = 0; column < headers.Length; column++)
-                {
-                    GUILayout.Label(headers[column], _skin.TableHeader, ColumnOption(column, headers.Length, widths));
-                }
-
-                GUILayout.EndHorizontal();
-            }
-
-            if (rows == null || rows.Count == 0)
-            {
-                GUILayout.Label("No rows.", _skin.Label);
-                return clicked;
-            }
-
-            for (var index = 0; index < rows.Count; index++)
-            {
-                var row = rows[index];
-                if (row == null)
-                {
-                    continue;
-                }
-
-                GUILayout.BeginHorizontal();
-                for (var column = 0; column < row.Length; column++)
-                {
-                    GUILayout.Label(row[column], _skin.Cell, ColumnOption(column, row.Length, widths));
-                }
-
-                GUILayout.EndHorizontal();
-
-                var rect = GUILayoutUtility.GetLastRect();
-                var background = index == selected
-                    ? _skin.RowHighlight
-                    : index % 2 == 1 ? _skin.RowStripe : null;
-
-                if (background != null && Event.current.type == EventType.Repaint)
-                {
-                    GUI.DrawTexture(rect, background);
-                }
-
-                if (Event.current.type == EventType.MouseDown && rect.Contains(Event.current.mousePosition))
-                {
-                    clicked = index;
-                    Event.current.Use();
-                }
-            }
-
-            return clicked;
-        }
-
-        private GUILayoutOption ColumnOption(int column, int columnCount, float[] widths)
-        {
-            if (widths != null && column < widths.Length && column < columnCount - 1)
-            {
-                return GUILayout.Width(_skin.Scaled(widths[column]));
-            }
-
-            return GUILayout.ExpandWidth(true);
-        }
-
-        public void CopyRow(string key, string value)
-        {
-            GUILayout.BeginHorizontal();
-            GUILayout.Label(key, _skin.Key);
-            GUILayout.Label(value ?? "—", _skin.Value);
-
-            using (new GuiEnabledScope(!string.IsNullOrEmpty(value)))
-            {
-                if (GUILayout.Button("copy", _skin.SmallButton, GUILayout.Width(_skin.Scaled(52f))))
-                {
-                    GUIUtility.systemCopyBuffer = value;
-                    Toast($"Copied {key}");
-                }
-            }
-
-            GUILayout.EndHorizontal();
         }
 
         public bool Button(string label)
@@ -224,7 +156,7 @@ namespace LiangTools.Debugging
 
             GUILayout.BeginHorizontal();
             var confirmed = GUILayout.Button(confirmQuestion, _skin.DangerButton);
-            var cancelled = GUILayout.Button("Cancel", _skin.Button, GUILayout.Width(_skin.Scaled(80f)));
+            var cancelled = GUILayout.Button("Cancel", _skin.Button, GUILayout.Width(_skin.Scaled(78f)));
             GUILayout.EndHorizontal();
 
             if (confirmed || cancelled)
@@ -237,15 +169,31 @@ namespace LiangTools.Debugging
 
         public bool Toggle(string label, bool value)
         {
-            return GUILayout.Toggle(value, $"  {label}", _skin.Toggle);
+            GUILayout.BeginHorizontal(NextRowStyle());
+            GUILayout.Label(label, _skin.Key);
+            GUILayout.FlexibleSpace();
+
+            var style = value ? _skin.PillOn : _skin.PillOff;
+            if (GUILayout.Button(value ? "ON" : "OFF", style, GUILayout.Width(_skin.Scaled(46f))))
+            {
+                value = !value;
+            }
+
+            GUILayout.EndHorizontal();
+            return value;
         }
 
         public float Slider(string label, float value, float min, float max)
         {
-            GUILayout.BeginHorizontal();
+            GUILayout.BeginHorizontal(NextRowStyle());
             GUILayout.Label(label, _skin.Key);
             var result = GUILayout.HorizontalSlider(value, min, max, _skin.Slider, _skin.SliderThumb);
-            GUILayout.Label(result.ToString("0.##"), _skin.Value, GUILayout.Width(_skin.Scaled(56f)));
+
+            using (new GuiColorScope(DebugSkin.ToneColor(DebugTone.Normal)))
+            {
+                GUILayout.Label(result.ToString("0.##"), _skin.Value, GUILayout.Width(_skin.Scaled(52f)));
+            }
+
             GUILayout.EndHorizontal();
             return result;
         }
@@ -253,6 +201,81 @@ namespace LiangTools.Debugging
         public void Separator()
         {
             GUILayout.Space(_skin.Scaled(6f));
+        }
+
+        /// <summary>
+        /// Draws a header row plus one row per entry and returns the index of the row
+        /// clicked this frame, or -1. Widths apply to the leading columns; the last
+        /// column takes the remaining space.
+        /// </summary>
+        public int Table(string[] headers, IList<string[]> rows, int selected, params float[] widths)
+        {
+            var clicked = -1;
+
+            if (headers != null && headers.Length > 0)
+            {
+                GUILayout.BeginHorizontal(_skin.Row);
+                for (var column = 0; column < headers.Length; column++)
+                {
+                    GUILayout.Label(headers[column], _skin.TableHeader, ColumnOption(column, headers.Length, widths));
+                }
+
+                GUILayout.EndHorizontal();
+            }
+
+            if (rows == null || rows.Count == 0)
+            {
+                GUILayout.Label("Nothing to show.", _skin.Key);
+                return clicked;
+            }
+
+            for (var index = 0; index < rows.Count; index++)
+            {
+                var row = rows[index];
+                if (row == null)
+                {
+                    continue;
+                }
+
+                var style = index == selected
+                    ? _skin.SelectedRow
+                    : index % 2 == 1 ? _skin.AltRow : _skin.Row;
+
+                GUILayout.BeginHorizontal(style);
+                for (var column = 0; column < row.Length; column++)
+                {
+                    GUILayout.Label(row[column], _skin.Cell, ColumnOption(column, row.Length, widths));
+                }
+
+                GUILayout.EndHorizontal();
+
+                var rect = GUILayoutUtility.GetLastRect();
+                if (Event.current.type == EventType.MouseDown && rect.Contains(Event.current.mousePosition))
+                {
+                    clicked = index;
+                    Event.current.Use();
+                }
+            }
+
+            return clicked;
+        }
+
+        // Alternating background for consecutive rows inside a section, so a long list
+        // of key/value pairs stays readable. The style is applied to the row group, not
+        // drawn after it, so the background lands under the text rather than over it.
+        private GUIStyle NextRowStyle()
+        {
+            return _rowIndex++ % 2 == 1 ? _skin.AltRow : _skin.Row;
+        }
+
+        private GUILayoutOption ColumnOption(int column, int columnCount, float[] widths)
+        {
+            if (widths != null && column < widths.Length && column < columnCount - 1)
+            {
+                return GUILayout.Width(_skin.Scaled(widths[column]));
+            }
+
+            return GUILayout.ExpandWidth(true);
         }
 
         private static void Toast(string message)
