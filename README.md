@@ -20,7 +20,7 @@ https://github.com/nguyennam1706/com.liang.tools.git
 Pin to a released version (recommended for production):
 
 ```
-https://github.com/nguyennam1706/com.liang.tools.git#v1.4.0
+https://github.com/nguyennam1706/com.liang.tools.git#v1.5.0
 ```
 
 The SSH remote `git@github.com:nguyennam1706/com.liang.tools.git` works too, and
@@ -35,7 +35,7 @@ Add the entry directly to `Packages/manifest.json`:
 ```json
 {
   "dependencies": {
-    "com.liang.tools": "https://github.com/nguyennam1706/com.liang.tools.git#v1.4.0"
+    "com.liang.tools": "https://github.com/nguyennam1706/com.liang.tools.git#v1.5.0"
   }
 }
 ```
@@ -110,6 +110,31 @@ continuous.
 | `Alt+[` / `Alt+]` | One step slower / faster |
 
 The same commands live under `Tools → Liang Tools → Time Scale`.
+
+### Clear PlayerPrefs & Recompile
+
+Two buttons on the **left** side of the main toolbar, on the far side of the
+Play / Pause / Step controls from the other tools.
+
+**Clear PlayerPrefs** deletes every key for the project, after a confirmation
+dialog — it cannot be undone. Note it also clears the overlay's own remembered
+choices (FPS readout, reopen handle, log capture), since those live in
+`PlayerPrefs` too.
+
+**Recompile** requests a full script rebuild through
+`CompilationPipeline.RequestScriptCompilation`. It greys out while a compile is
+already running and during Play mode, because Unity drops the request in both
+cases; the tooltip says which of the two is blocking it.
+
+Both also appear under `Tools → Liang Tools`, with no default key binding — bind
+them yourself in **Edit → Shortcuts** under *Liang Tools* if you want one.
+
+On 6000.3 these register in the `Left` dock zone; on older editors they attach to
+the toolbar's `ToolbarZoneLeftAlign`. Unity's `Middle` zone holds only the Play
+mode controls at index 0 and there is no supported way to sit before it, so the
+left zone is where "the other side" actually exists. Unity 6.3 lets you drag
+toolbar elements around, and that arrangement is remembered, so you can nudge
+them from there.
 
 ### Debug Overlay
 
@@ -241,8 +266,8 @@ Samples~/         Imported on demand via the Package Manager
 2. Commit, then tag and push:
 
 ```
-git tag v1.4.0
+git tag v1.5.0
 git push origin main --tags
 ```
 
-Consumers install that exact tag with `#v1.4.0`.
+Consumers install that exact tag with `#v1.5.0`.

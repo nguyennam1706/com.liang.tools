@@ -5,6 +5,24 @@ All notable changes to this package are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2026-09-14
+
+### Added
+
+- Clear PlayerPrefs and Recompile buttons on the left side of the main toolbar,
+  on the far side of the Play mode controls from the other tools. On 6000.3 they
+  use the `Left` dock zone; older editors attach to `ToolbarZoneLeftAlign`.
+- `LegacyMainToolbar` can now host tools in more than one toolbar zone, rather
+  than always adding them beside the Play mode controls.
+- Clear PlayerPrefs confirms first and warns when Play mode is running, since the
+  game can write keys straight back.
+- Recompile calls `CompilationPipeline.RequestScriptCompilation` and disables
+  itself while compiling or in Play mode, where Unity would drop the request. The
+  toolbar element is rebuilt on `compilationStarted`, `compilationFinished` and
+  play mode changes so the state stays current.
+- Both commands appear under `Tools → Liang Tools` and are registered with the
+  Shortcut Manager without a default binding.
+
 ## [1.4.0] - 2026-09-05
 
 ### Added

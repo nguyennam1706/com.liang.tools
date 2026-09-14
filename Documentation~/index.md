@@ -102,6 +102,27 @@ chosen over uGUI or UI Toolkit because it needs no prefab, scene, font or
 `PanelSettings` asset — a package with zero asset dependencies installs cleanly
 into any render pipeline.
 
+## Editor Utilities
+
+`Editor/Utilities` holds the two one-shot project actions.
+
+| Type | Responsibility |
+| --- | --- |
+| `EditorActions` | The actions themselves plus `CanRecompile`, so the toolbar, the legacy toolbar and the menu validator all agree on when Recompile is available |
+| `UtilitiesToolbar` | Unity 6000.3+. Two `MainToolbarButton` elements in the `Left` dock zone at index 20 and 21 |
+| `UtilitiesLegacyToolbar` | Unity below 6000.3. Two IMGUI buttons registered with `LegacyMainToolbar` in the `LeftAlign` zone |
+| `UtilitiesMenu` | Menu items and unbound `ShortcutManager` entries |
+
+Unity's `Middle` dock zone contains only `Play Mode Controls` at index 0, and
+nothing documented sits before it — `defaultDockIndex` has no clamp in its
+setter, but whether the layout code tolerates a negative value is not something
+the assemblies make clear, and a wrong guess breaks the whole toolbar. The left
+zone is the supported "other side".
+
+Recompile is disabled rather than hidden while unavailable: Unity silently drops
+a compilation request during Play mode or an in-flight compile, so a button that
+looked live but did nothing would be worse than a greyed-out one.
+
 ## Adding a new tool
 
 Runtime code goes under `Runtime/` in the `LiangTools` namespace. Editor-only code goes under `Editor/` in `LiangTools.Editor`; it may reference runtime types, never the reverse.

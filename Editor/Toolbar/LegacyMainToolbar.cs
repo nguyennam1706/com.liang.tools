@@ -8,14 +8,27 @@ using UnityEngine.UIElements;
 
 namespace LiangTools.Editor.Toolbar
 {
+    /// <summary>
+    /// Which part of the pre-6000.3 main toolbar a tool draws into. The names map to
+    /// the elements Unity builds inside <c>UnityEditor.Toolbar</c>.
+    /// </summary>
+    internal enum LegacyToolbarZone
+    {
+        PlayMode,
+        LeftAlign,
+        RightAlign
+    }
+
     [InitializeOnLoad]
     internal static class LegacyMainToolbar
     {
-        private const string PlayModeZone = "ToolbarZonePlayMode";
         private const string WarnedKey = "LiangTools.Toolbar.LegacyWarned";
 
-        private static readonly List<Action> Handlers = new List<Action>();
-        private static IMGUIContainer _container;
+        private static readonly Dictionary<LegacyToolbarZone, List<Action>> Handlers =
+            new Dictionary<LegacyToolbarZone, List<Action>>();
+
+        private static readonly Dictionary<LegacyToolbarZone, IMGUIContainer> Containers =
+            new Dictionary<LegacyToolbarZone, IMGUIContainer>();
 
         static LegacyMainToolbar()
         {
@@ -23,18 +36,34 @@ namespace LiangTools.Editor.Toolbar
             EditorApplication.playModeStateChanged += _ => ScheduleAttach();
         }
 
-        public static void Register(Action onGui)
+        public static void Register(Action onGui, LegacyToolbarZone zone = LegacyToolbarZone.PlayMode)
         {
-            if (onGui != null && !Handlers.Contains(onGui))
+            if (onGui == null)
             {
-                Handlers.Add(onGui);
-                ScheduleAttach();
+                return;
             }
+
+            if (!Handlers.TryGetValue(zone, out var list))
+            {
+                list = new List<Action>();
+                Handlers[zone] = list;
+            }
+
+            if (list.Contains(onGui))
+            {
+                return;
+            }
+
+            list.Add(onGui);
+            ScheduleAttach();
         }
 
         public static void Repaint()
         {
-            _container?.MarkDirtyRepaint();
+            foreach (var container in Containers.Values)
+            {
+                container?.MarkDirtyRepaint();
+            }
         }
 
         private static void ScheduleAttach()
@@ -44,29 +73,55 @@ namespace LiangTools.Editor.Toolbar
 
         private static void Attach()
         {
-            var zone = FindPlayModeZone();
-            if (zone == null)
+            var root = FindToolbarRoot();
+            if (root == null)
             {
                 return;
             }
 
-            _container?.RemoveFromHierarchy();
-            _container = new IMGUIContainer(OnGui);
-            zone.Add(_container);
+            foreach (var pair in Handlers)
+            {
+                var zone = root.Q(ZoneName(pair.Key));
+                if (zone == null)
+                {
+                    WarnOnce($"'{ZoneName(pair.Key)}' is missing from the toolbar");
+                    continue;
+                }
+
+                if (Containers.TryGetValue(pair.Key, out var existing))
+                {
+                    existing?.RemoveFromHierarchy();
+                }
+
+                var handlers = pair.Value;
+                var container = new IMGUIContainer(() => Draw(handlers));
+                Containers[pair.Key] = container;
+                zone.Add(container);
+            }
         }
 
-        private static void OnGui()
+        private static void Draw(List<Action> handlers)
         {
             GUILayout.BeginHorizontal();
-            for (var i = 0; i < Handlers.Count; i++)
+            for (var i = 0; i < handlers.Count; i++)
             {
-                Handlers[i]?.Invoke();
+                handlers[i]?.Invoke();
             }
 
             GUILayout.EndHorizontal();
         }
 
-        private static VisualElement FindPlayModeZone()
+        private static string ZoneName(LegacyToolbarZone zone)
+        {
+            switch (zone)
+            {
+                case LegacyToolbarZone.LeftAlign: return "ToolbarZoneLeftAlign";
+                case LegacyToolbarZone.RightAlign: return "ToolbarZoneRightAlign";
+                default: return "ToolbarZonePlayMode";
+            }
+        }
+
+        private static VisualElement FindToolbarRoot()
         {
             var toolbarType = typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.Toolbar");
             if (toolbarType == null)
@@ -88,13 +143,7 @@ namespace LiangTools.Editor.Toolbar
                 return null;
             }
 
-            var zone = root.Q(PlayModeZone);
-            if (zone == null)
-            {
-                WarnOnce($"'{PlayModeZone}' is missing from the toolbar");
-            }
-
-            return zone;
+            return root;
         }
 
         private static void WarnOnce(string reason)
