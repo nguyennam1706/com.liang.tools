@@ -24,11 +24,13 @@ namespace LiangTools.Editor.Toolbar
     {
         private const string WarnedKey = "LiangTools.Toolbar.LegacyWarned";
 
-        private static readonly Dictionary<LegacyToolbarZone, List<Action>> Handlers =
-            new Dictionary<LegacyToolbarZone, List<Action>>();
+        // Keyed by zone plus which end of it, so one zone can host a group at each end
+        // without the two overwriting each other's container.
+        private static readonly Dictionary<(LegacyToolbarZone Zone, bool Prepend), List<Action>> Handlers =
+            new Dictionary<(LegacyToolbarZone, bool), List<Action>>();
 
-        private static readonly Dictionary<LegacyToolbarZone, IMGUIContainer> Containers =
-            new Dictionary<LegacyToolbarZone, IMGUIContainer>();
+        private static readonly Dictionary<(LegacyToolbarZone Zone, bool Prepend), IMGUIContainer> Containers =
+            new Dictionary<(LegacyToolbarZone, bool), IMGUIContainer>();
 
         static LegacyMainToolbar()
         {
@@ -36,17 +38,27 @@ namespace LiangTools.Editor.Toolbar
             EditorApplication.playModeStateChanged += _ => ScheduleAttach();
         }
 
-        public static void Register(Action onGui, LegacyToolbarZone zone = LegacyToolbarZone.PlayMode)
+        /// <param name="prepend">
+        /// Insert at the start of the zone instead of appending. Adding to
+        /// <c>ToolbarZonePlayMode</c> normally lands to the right of the Play, Pause and
+        /// Step buttons; prepending puts the tool to their left.
+        /// </param>
+        public static void Register(
+            Action onGui,
+            LegacyToolbarZone zone = LegacyToolbarZone.PlayMode,
+            bool prepend = false)
         {
             if (onGui == null)
             {
                 return;
             }
 
-            if (!Handlers.TryGetValue(zone, out var list))
+            var key = (zone, prepend);
+
+            if (!Handlers.TryGetValue(key, out var list))
             {
                 list = new List<Action>();
-                Handlers[zone] = list;
+                Handlers[key] = list;
             }
 
             if (list.Contains(onGui))
@@ -81,10 +93,11 @@ namespace LiangTools.Editor.Toolbar
 
             foreach (var pair in Handlers)
             {
-                var zone = root.Q(ZoneName(pair.Key));
+                var zoneName = ZoneName(pair.Key.Zone);
+                var zone = root.Q(zoneName);
                 if (zone == null)
                 {
-                    WarnOnce($"'{ZoneName(pair.Key)}' is missing from the toolbar");
+                    WarnOnce($"'{zoneName}' is missing from the toolbar");
                     continue;
                 }
 
@@ -96,7 +109,15 @@ namespace LiangTools.Editor.Toolbar
                 var handlers = pair.Value;
                 var container = new IMGUIContainer(() => Draw(handlers));
                 Containers[pair.Key] = container;
-                zone.Add(container);
+
+                if (pair.Key.Prepend)
+                {
+                    zone.Insert(0, container);
+                }
+                else
+                {
+                    zone.Add(container);
+                }
             }
         }
 

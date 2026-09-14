@@ -11,7 +11,7 @@ namespace LiangTools.Editor.Utilities
     {
         static UtilitiesLegacyToolbar()
         {
-            LegacyMainToolbar.Register(OnGui, LegacyToolbarZone.LeftAlign);
+            LegacyMainToolbar.Register(OnGui, LegacyToolbarZone.PlayMode, prepend: true);
             CompilationPipeline.compilationStarted += _ => LegacyMainToolbar.Repaint();
             CompilationPipeline.compilationFinished += _ => LegacyMainToolbar.Repaint();
             EditorApplication.playModeStateChanged += _ => LegacyMainToolbar.Repaint();

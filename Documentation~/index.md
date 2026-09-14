@@ -109,15 +109,16 @@ into any render pipeline.
 | Type | Responsibility |
 | --- | --- |
 | `EditorActions` | The actions themselves plus `CanRecompile`, so the toolbar, the legacy toolbar and the menu validator all agree on when Recompile is available |
-| `UtilitiesToolbar` | Unity 6000.3+. Two `MainToolbarButton` elements in the `Left` dock zone at index 20 and 21 |
-| `UtilitiesLegacyToolbar` | Unity below 6000.3. Two IMGUI buttons registered with `LegacyMainToolbar` in the `LeftAlign` zone |
+| `UtilitiesToolbar` | Unity 6000.3+. Two `MainToolbarButton` elements in the `Middle` dock zone at index -2 and -1, ahead of the play controls |
+| `UtilitiesLegacyToolbar` | Unity below 6000.3. Two IMGUI buttons registered with `LegacyMainToolbar`, prepended to `ToolbarZonePlayMode` |
 | `UtilitiesMenu` | Menu items and unbound `ShortcutManager` entries |
 
-Unity's `Middle` dock zone contains only `Play Mode Controls` at index 0, and
-nothing documented sits before it — `defaultDockIndex` has no clamp in its
-setter, but whether the layout code tolerates a negative value is not something
-the assemblies make clear, and a wrong guess breaks the whole toolbar. The left
-zone is the supported "other side".
+Unity's `Middle` dock zone contains only `Play Mode Controls`, at index 0, so
+sitting to its left means a negative index. That is safe because
+`defaultDockIndex` is a sort key rather than an insert position: Unity's own
+`Left` zone has three elements sharing index 11 while holding five in total,
+which `List.Insert` would throw on. The setter itself is a bare `stfld` with no
+clamp.
 
 Recompile is disabled rather than hidden while unavailable: Unity silently drops
 a compilation request during Play mode or an in-flight compile, so a button that

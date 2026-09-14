@@ -21,10 +21,15 @@ namespace LiangTools.Editor.Utilities
             EditorApplication.playModeStateChanged += _ => RefreshRecompile();
         }
 
+        // Play Mode Controls is the only element Unity puts in the Middle zone, at
+        // index 0, so a negative index is the only way to sit to its left. The index is
+        // a sort key rather than an insert position -- Unity's own Left zone has three
+        // elements sharing index 11 while holding five elements in total, which
+        // List.Insert could not do -- so negative values simply sort first.
         [MainToolbarElement(
             ClearPrefsPath,
-            defaultDockPosition = MainToolbarDockPosition.Left,
-            defaultDockIndex = 20,
+            defaultDockPosition = MainToolbarDockPosition.Middle,
+            defaultDockIndex = -2,
             ussName = "LiangToolsClearPrefs")]
         public static MainToolbarElement CreateClearPrefs()
         {
@@ -38,8 +43,8 @@ namespace LiangTools.Editor.Utilities
 
         [MainToolbarElement(
             RecompilePath,
-            defaultDockPosition = MainToolbarDockPosition.Left,
-            defaultDockIndex = 21,
+            defaultDockPosition = MainToolbarDockPosition.Middle,
+            defaultDockIndex = -1,
             ussName = "LiangToolsRecompile")]
         public static MainToolbarElement CreateRecompile()
         {
