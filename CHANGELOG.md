@@ -5,6 +5,25 @@ All notable changes to this package are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.2] - 2026-09-17
+
+### Fixed
+
+- 1.6.1 disabled the active `EventSystem` while the overlay was open, which broke
+  any project whose code calls `EventSystem.current`. `EventSystem.current`
+  returns the first entry of a list the component removes itself from in
+  `OnDisable`, so disabling it makes the property null and calls such as
+  `EventSystem.current.IsPointerOverGameObject()` throw a
+  `NullReferenceException` every frame. The overlay now disables the scene's
+  raycasters (`BaseRaycaster`, covering `GraphicRaycaster` and the physics
+  raycasters) and leaves the `EventSystem` untouched.
+
+### Notes
+
+- With raycasters off, `IsPointerOverGameObject()` reports false, so gameplay
+  that reads input directly still sees taps on the overlay. Guard that code with
+  `LiangDebug.IsOpen`.
+
 ## [1.6.1] - 2026-09-17
 
 ### Fixed

@@ -90,7 +90,7 @@ namespace LiangTools.Debugging
         private void OnDestroy()
         {
             // Releasing here matters: without it, an overlay destroyed while open would
-            // leave the EventSystem switched off and the game unclickable.
+            // leave the game's raycasters switched off and its UI dead.
             InputBlocker.SetBlocking(false);
 
             if (_instance == this)

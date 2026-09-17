@@ -20,7 +20,7 @@ https://github.com/nguyennam1706/com.liang.tools.git
 Pin to a released version (recommended for production):
 
 ```
-https://github.com/nguyennam1706/com.liang.tools.git#v1.6.1
+https://github.com/nguyennam1706/com.liang.tools.git#v1.6.2
 ```
 
 The SSH remote `git@github.com:nguyennam1706/com.liang.tools.git` works too, and
@@ -35,7 +35,7 @@ Add the entry directly to `Packages/manifest.json`:
 ```json
 {
   "dependencies": {
-    "com.liang.tools": "https://github.com/nguyennam1706/com.liang.tools.git#v1.6.1"
+    "com.liang.tools": "https://github.com/nguyennam1706/com.liang.tools.git#v1.6.2"
   }
 }
 ```
@@ -163,16 +163,27 @@ The sequence is `TapGesture.DefaultPattern`; pass your own `TapStep[]` of
 The overlay exists only during Play mode — it is bootstrapped by
 `[RuntimeInitializeOnLoadMethod]`, so nothing shows in edit mode.
 
-While it is open it stops clicks reaching the game. IMGUI has no raycast target
-and draws on a separate pass from uGUI, so a tap would otherwise be delivered to
-both. Two things happen: the active `EventSystem` is disabled for as long as the
-overlay is open (found by reflection, so ugui stays an optional dependency), and
-any mouse or touch event the panel's own controls did not claim is consumed.
+While it is open, every active raycaster in the scene is switched off, so taps on
+the panel cannot also hit the game's UI; they are switched back on when it closes
+or is destroyed. Mouse and touch events the panel's own controls did not claim
+are consumed too, so they do not fall through to other IMGUI.
 
-Code that reads input directly rather than through uGUI is not covered by
-either — nothing can intercept that from outside. Check `LiangDebug.IsOpen`
-before acting on a tap in that case; it is always `false` in a build without the
-overlay, so the guard costs nothing there.
+The `EventSystem` itself is deliberately left alone. `EventSystem.current`
+returns the first entry of a list the component removes itself from in
+`OnDisable`, so disabling it makes `EventSystem.current` null and any game code
+calling `EventSystem.current.IsPointerOverGameObject()` throws every frame.
+
+**Gameplay that reads input directly is not covered.** With raycasters off,
+`IsPointerOverGameObject()` returns false, so a tap on the overlay still looks
+like a tap on empty space to your own code. Guard it with `LiangDebug.IsOpen`:
+
+```csharp
+private void Update()
+{
+    if (LiangDebug.IsOpen) return;   // always false without the overlay compiled in
+    // ... existing tap handling
+}
+```
 
 **FPS** — current, average, min and max frame rate plus frame time, a reset
 button, and target frame rate / VSync / time scale with 30 · 60 · uncapped
@@ -283,8 +294,8 @@ Samples~/         Imported on demand via the Package Manager
 2. Commit, then tag and push:
 
 ```
-git tag v1.6.1
+git tag v1.6.2
 git push origin main --tags
 ```
 
-Consumers install that exact tag with `#v1.6.1`.
+Consumers install that exact tag with `#v1.6.2`.
