@@ -2,20 +2,20 @@ using System.Collections.Generic;
 
 namespace LiangTools.Debugging
 {
-    public enum ScreenHalf
+    public enum ScreenCorner
     {
-        Left,
-        Right
+        TopLeft,
+        TopRight
     }
 
     public readonly struct TapStep
     {
-        public readonly ScreenHalf Half;
+        public readonly ScreenCorner Corner;
         public readonly int Count;
 
-        public TapStep(ScreenHalf half, int count)
+        public TapStep(ScreenCorner corner, int count)
         {
-            Half = half;
+            Corner = corner;
             Count = count;
         }
     }
@@ -24,12 +24,12 @@ namespace LiangTools.Debugging
     {
         public static readonly TapStep[] DefaultPattern =
         {
-            new TapStep(ScreenHalf.Left, 1),
-            new TapStep(ScreenHalf.Right, 2),
-            new TapStep(ScreenHalf.Left, 3)
+            new TapStep(ScreenCorner.TopLeft, 1),
+            new TapStep(ScreenCorner.TopRight, 2),
+            new TapStep(ScreenCorner.TopLeft, 3)
         };
 
-        private readonly ScreenHalf[] _sequence;
+        private readonly ScreenCorner[] _sequence;
         private readonly float _timeout;
 
         private int _matched;
@@ -50,7 +50,7 @@ namespace LiangTools.Debugging
             _matched = 0;
         }
 
-        public bool Feed(ScreenHalf half, float time)
+        public bool Feed(ScreenCorner corner, float time)
         {
             if (_sequence.Length == 0)
             {
@@ -64,13 +64,13 @@ namespace LiangTools.Debugging
 
             _lastTapTime = time;
 
-            if (_sequence[_matched] == half)
+            if (_sequence[_matched] == corner)
             {
                 _matched++;
             }
             else
             {
-                _matched = _sequence[0] == half ? 1 : 0;
+                _matched = _sequence[0] == corner ? 1 : 0;
             }
 
             if (_matched < _sequence.Length)
@@ -82,7 +82,7 @@ namespace LiangTools.Debugging
             return true;
         }
 
-        private static ScreenHalf[] Flatten(IReadOnlyList<TapStep> pattern)
+        private static ScreenCorner[] Flatten(IReadOnlyList<TapStep> pattern)
         {
             var total = 0;
             for (var i = 0; i < pattern.Count; i++)
@@ -90,13 +90,13 @@ namespace LiangTools.Debugging
                 total += pattern[i].Count > 0 ? pattern[i].Count : 0;
             }
 
-            var flat = new ScreenHalf[total];
+            var flat = new ScreenCorner[total];
             var index = 0;
             for (var i = 0; i < pattern.Count; i++)
             {
                 for (var t = 0; t < pattern[i].Count; t++)
                 {
-                    flat[index++] = pattern[i].Half;
+                    flat[index++] = pattern[i].Corner;
                 }
             }
 

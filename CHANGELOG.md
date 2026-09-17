@@ -5,6 +5,20 @@ All notable changes to this package are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2026-09-17
+
+### Changed
+
+- The open gesture now only accepts taps in the **two top corners** — about a
+  quarter of the width and the top 15% of the height. Previously the screen was
+  split down the middle, so a tap anywhere in either half counted and normal
+  play could open the overlay by accident.
+- A tap outside both corners is ignored rather than counted as a miss, so
+  gameplay touches no longer break a half-finished sequence.
+- **Breaking:** `ScreenHalf` is now `ScreenCorner`, with `Left` / `Right`
+  becoming `TopLeft` / `TopRight`, and `TapStep.Half` becoming `TapStep.Corner`.
+  Only code passing a custom pattern to `TapGesture` is affected.
+
 ## [1.5.1] - 2026-09-14
 
 ### Changed

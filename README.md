@@ -20,7 +20,7 @@ https://github.com/nguyennam1706/com.liang.tools.git
 Pin to a released version (recommended for production):
 
 ```
-https://github.com/nguyennam1706/com.liang.tools.git#v1.5.1
+https://github.com/nguyennam1706/com.liang.tools.git#v1.6.0
 ```
 
 The SSH remote `git@github.com:nguyennam1706/com.liang.tools.git` works too, and
@@ -35,7 +35,7 @@ Add the entry directly to `Packages/manifest.json`:
 ```json
 {
   "dependencies": {
-    "com.liang.tools": "https://github.com/nguyennam1706/com.liang.tools.git#v1.5.1"
+    "com.liang.tools": "https://github.com/nguyennam1706/com.liang.tools.git#v1.6.0"
   }
 }
 ```
@@ -146,16 +146,19 @@ carries no prefabs, scenes or art. It ships three pages and takes your own.
 
 Opening it, in Play mode:
 
-- Tap **once on the left half, twice on the right, then three times on the
-  left**, each tap within 2 seconds of the last. Taps are read from IMGUI
-  events, so this works whichever input backend the project uses.
+- Tap the **top-left corner once, the top-right corner twice, then the top-left
+  three times**, each tap within 2 seconds of the last. Only the two top corners
+  count — roughly a quarter of the width and the top 15% of the height — and a
+  tap anywhere else is ignored rather than breaking the sequence, so ordinary
+  play does not interfere. Taps are read from IMGUI events, so this works
+  whichever input backend the project uses.
 - Press `Alt+D` in the editor, or use `Tools → Liang Tools → Debug Overlay`.
 - Call `LiangDebug.Toggle()` from your own code or your own input binding.
 - Turn on *Show a button to reopen this overlay* on the FPS page to keep a small
   `≡` button in the top-right corner; the choice persists in `PlayerPrefs`.
 
-The sequence is `TapGesture.DefaultPattern`; pass your own `TapStep[]` to
-`new TapGesture(...)` to change it.
+The sequence is `TapGesture.DefaultPattern`; pass your own `TapStep[]` of
+`ScreenCorner.TopLeft` / `TopRight` to `new TapGesture(...)` to change it.
 
 The overlay exists only during Play mode — it is bootstrapped by
 `[RuntimeInitializeOnLoadMethod]`, so nothing shows in edit mode.
@@ -269,8 +272,8 @@ Samples~/         Imported on demand via the Package Manager
 2. Commit, then tag and push:
 
 ```
-git tag v1.5.1
+git tag v1.6.0
 git push origin main --tags
 ```
 
-Consumers install that exact tag with `#v1.5.1`.
+Consumers install that exact tag with `#v1.6.0`.

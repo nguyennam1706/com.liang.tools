@@ -7,6 +7,8 @@ namespace LiangTools.Debugging
     public sealed class DebugOverlay : MonoBehaviour
     {
         private const string ShowFpsKey = "LiangTools.Debug.ShowFps";
+        private const float CornerWidthRatio = 0.25f;
+        private const float CornerHeightRatio = 0.15f;
         private const string ShowHandleKey = "LiangTools.Debug.ShowHandle";
 
         private static DebugOverlay _instance;
@@ -132,11 +134,42 @@ namespace LiangTools.Debugging
                 return;
             }
 
-            var half = current.mousePosition.x < Screen.width * 0.5f ? ScreenHalf.Left : ScreenHalf.Right;
-            if (OpenGesture.Feed(half, Time.unscaledTime))
+            if (!TryResolveCorner(current.mousePosition, out var corner))
+            {
+                // A tap anywhere else is ignored rather than treated as a miss, so
+                // ordinary play does not constantly break a half-finished sequence.
+                return;
+            }
+
+            if (OpenGesture.Feed(corner, Time.unscaledTime))
             {
                 SetOpen(true);
             }
+        }
+
+        // IMGUI coordinates start at the top-left, so the top band is small y.
+        private static bool TryResolveCorner(Vector2 position, out ScreenCorner corner)
+        {
+            corner = default;
+
+            if (position.y > Screen.height * CornerHeightRatio)
+            {
+                return false;
+            }
+
+            if (position.x <= Screen.width * CornerWidthRatio)
+            {
+                corner = ScreenCorner.TopLeft;
+                return true;
+            }
+
+            if (position.x >= Screen.width * (1f - CornerWidthRatio))
+            {
+                corner = ScreenCorner.TopRight;
+                return true;
+            }
+
+            return false;
         }
 
         private void OnGUI()

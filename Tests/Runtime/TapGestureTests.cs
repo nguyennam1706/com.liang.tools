@@ -5,7 +5,7 @@ namespace LiangTools.Tests
 {
     public class TapGestureTests
     {
-        private static bool FeedAll(TapGesture gesture, params ScreenHalf[] taps)
+        private static bool FeedAll(TapGesture gesture, params ScreenCorner[] taps)
         {
             var opened = false;
             var time = 0f;
@@ -19,7 +19,7 @@ namespace LiangTools.Tests
         }
 
         [Test]
-        public void DefaultPattern_IsOneLeftTwoRightThreeLeft()
+        public void DefaultPattern_IsOneTopLeftTwoTopRightThreeTopLeft()
         {
             var gesture = new TapGesture();
             Assert.AreEqual(6, gesture.Length);
@@ -30,9 +30,9 @@ namespace LiangTools.Tests
         {
             var gesture = new TapGesture();
             var opened = FeedAll(gesture,
-                ScreenHalf.Left,
-                ScreenHalf.Right, ScreenHalf.Right,
-                ScreenHalf.Left, ScreenHalf.Left, ScreenHalf.Left);
+                ScreenCorner.TopLeft,
+                ScreenCorner.TopRight, ScreenCorner.TopRight,
+                ScreenCorner.TopLeft, ScreenCorner.TopLeft, ScreenCorner.TopLeft);
 
             Assert.IsTrue(opened);
         }
@@ -42,31 +42,31 @@ namespace LiangTools.Tests
         {
             var gesture = new TapGesture();
             var opened = FeedAll(gesture,
-                ScreenHalf.Left,
-                ScreenHalf.Right, ScreenHalf.Right,
-                ScreenHalf.Left, ScreenHalf.Left);
+                ScreenCorner.TopLeft,
+                ScreenCorner.TopRight, ScreenCorner.TopRight,
+                ScreenCorner.TopLeft, ScreenCorner.TopLeft);
 
             Assert.IsFalse(opened);
             Assert.AreEqual(5, gesture.Progress);
         }
 
         [Test]
-        public void Feed_ResetsOnAWrongHalf()
+        public void Feed_ResetsOnAWrongCorner()
         {
             var gesture = new TapGesture();
-            FeedAll(gesture, ScreenHalf.Left, ScreenHalf.Right);
-            var opened = gesture.Feed(ScreenHalf.Left, 1f);
+            FeedAll(gesture, ScreenCorner.TopLeft, ScreenCorner.TopRight);
+            var opened = gesture.Feed(ScreenCorner.TopLeft, 1f);
 
             Assert.IsFalse(opened);
             Assert.AreEqual(1, gesture.Progress, "a wrong tap that matches the first step restarts the sequence");
         }
 
         [Test]
-        public void Feed_WrongHalfThatCannotStartTheSequenceClearsProgress()
+        public void Feed_WrongCornerThatCannotStartTheSequenceClearsProgress()
         {
             var gesture = new TapGesture();
-            FeedAll(gesture, ScreenHalf.Left, ScreenHalf.Right, ScreenHalf.Right);
-            gesture.Feed(ScreenHalf.Right, 1f);
+            FeedAll(gesture, ScreenCorner.TopLeft, ScreenCorner.TopRight, ScreenCorner.TopRight);
+            gesture.Feed(ScreenCorner.TopRight, 1f);
 
             Assert.AreEqual(0, gesture.Progress);
         }
@@ -75,8 +75,8 @@ namespace LiangTools.Tests
         public void Feed_RestartsAfterTheTimeout()
         {
             var gesture = new TapGesture(timeoutSeconds: 2f);
-            gesture.Feed(ScreenHalf.Left, 0f);
-            gesture.Feed(ScreenHalf.Right, 10f);
+            gesture.Feed(ScreenCorner.TopLeft, 0f);
+            gesture.Feed(ScreenCorner.TopRight, 10f);
 
             Assert.AreEqual(0, gesture.Progress, "the right tap arrived too late, and cannot start the sequence");
         }
@@ -87,9 +87,9 @@ namespace LiangTools.Tests
             var gesture = new TapGesture();
             var full = new[]
             {
-                ScreenHalf.Left,
-                ScreenHalf.Right, ScreenHalf.Right,
-                ScreenHalf.Left, ScreenHalf.Left, ScreenHalf.Left
+                ScreenCorner.TopLeft,
+                ScreenCorner.TopRight, ScreenCorner.TopRight,
+                ScreenCorner.TopLeft, ScreenCorner.TopLeft, ScreenCorner.TopLeft
             };
 
             Assert.IsTrue(FeedAll(gesture, full));
@@ -102,12 +102,12 @@ namespace LiangTools.Tests
         {
             var gesture = new TapGesture(new[]
             {
-                new TapStep(ScreenHalf.Right, 2),
-                new TapStep(ScreenHalf.Left, 1)
+                new TapStep(ScreenCorner.TopRight, 2),
+                new TapStep(ScreenCorner.TopLeft, 1)
             });
 
             Assert.AreEqual(3, gesture.Length);
-            Assert.IsTrue(FeedAll(gesture, ScreenHalf.Right, ScreenHalf.Right, ScreenHalf.Left));
+            Assert.IsTrue(FeedAll(gesture, ScreenCorner.TopRight, ScreenCorner.TopRight, ScreenCorner.TopLeft));
         }
     }
 }
