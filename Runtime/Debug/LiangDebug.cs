@@ -39,6 +39,24 @@ namespace LiangTools.Debugging
             Pages.Remove(page);
         }
 
+        /// <summary>
+        /// Whether the overlay is currently on screen. Gameplay that reads input
+        /// directly — rather than through uGUI, which the overlay disables — should
+        /// check this before acting on a tap.
+        /// </summary>
+        public static bool IsOpen
+        {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD || LIANG_TOOLS_DEBUG
+            get
+            {
+                var overlay = DebugOverlay.Instance;
+                return overlay != null && overlay.IsOpen;
+            }
+#else
+            get => false;
+#endif
+        }
+
         public static void Open()
         {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD || LIANG_TOOLS_DEBUG

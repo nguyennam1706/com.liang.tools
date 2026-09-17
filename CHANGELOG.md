@@ -5,6 +5,24 @@ All notable changes to this package are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.1] - 2026-09-17
+
+### Fixed
+
+- Clicks on the open overlay also reached the game underneath. IMGUI has no
+  raycast target and draws on a pass of its own, so uGUI received the same tap.
+  The active `EventSystem` is now disabled while the overlay is open — located by
+  reflection so ugui stays an optional dependency — and restored on close, on
+  destroy, and if the overlay is torn down while still open.
+- Mouse and touch events the panel's own controls did not claim are now consumed,
+  so a tap on an empty part of the overlay no longer falls through to other IMGUI.
+
+### Added
+
+- `LiangDebug.IsOpen`, for gameplay that reads input directly instead of through
+  uGUI and therefore cannot be shielded from outside. It is always `false` in a
+  build compiled without the overlay.
+
 ## [1.6.0] - 2026-09-17
 
 ### Changed

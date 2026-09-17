@@ -7,8 +7,8 @@ namespace LiangTools.Debugging
     public sealed class DebugOverlay : MonoBehaviour
     {
         private const string ShowFpsKey = "LiangTools.Debug.ShowFps";
-        private const float CornerWidthRatio = 0.25f;
-        private const float CornerHeightRatio = 0.15f;
+        private const float CornerWidthRatio = 0.1f;
+        private const float CornerHeightRatio = 0.1f;
         private const string ShowHandleKey = "LiangTools.Debug.ShowHandle";
 
         private static DebugOverlay _instance;
@@ -89,6 +89,10 @@ namespace LiangTools.Debugging
 
         private void OnDestroy()
         {
+            // Releasing here matters: without it, an overlay destroyed while open would
+            // leave the EventSystem switched off and the game unclickable.
+            InputBlocker.SetBlocking(false);
+
             if (_instance == this)
             {
                 _instance = null;
@@ -114,6 +118,7 @@ namespace LiangTools.Debugging
         {
             IsOpen = open;
             OpenGesture.Reset();
+            InputBlocker.SetBlocking(open);
         }
 
         public void Toast(string message, float seconds = 1.5f)
@@ -195,6 +200,31 @@ namespace LiangTools.Debugging
 
             DrawWindow();
             DrawToast();
+            ConsumeRemainingInput();
+        }
+
+        // Anything the panel's own controls did not claim is swallowed here, so a tap on
+        // an empty part of the overlay does not fall through to IMGUI drawn underneath.
+        private static void ConsumeRemainingInput()
+        {
+            var current = Event.current;
+            if (current == null)
+            {
+                return;
+            }
+
+            switch (current.type)
+            {
+                case EventType.MouseDown:
+                case EventType.MouseUp:
+                case EventType.MouseDrag:
+                case EventType.ScrollWheel:
+                case EventType.TouchDown:
+                case EventType.TouchUp:
+                case EventType.TouchMove:
+                    current.Use();
+                    break;
+            }
         }
 
         private void DrawFpsOverlay()

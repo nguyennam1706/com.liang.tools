@@ -20,7 +20,7 @@ https://github.com/nguyennam1706/com.liang.tools.git
 Pin to a released version (recommended for production):
 
 ```
-https://github.com/nguyennam1706/com.liang.tools.git#v1.6.0
+https://github.com/nguyennam1706/com.liang.tools.git#v1.6.1
 ```
 
 The SSH remote `git@github.com:nguyennam1706/com.liang.tools.git` works too, and
@@ -35,7 +35,7 @@ Add the entry directly to `Packages/manifest.json`:
 ```json
 {
   "dependencies": {
-    "com.liang.tools": "https://github.com/nguyennam1706/com.liang.tools.git#v1.6.0"
+    "com.liang.tools": "https://github.com/nguyennam1706/com.liang.tools.git#v1.6.1"
   }
 }
 ```
@@ -148,8 +148,8 @@ Opening it, in Play mode:
 
 - Tap the **top-left corner once, the top-right corner twice, then the top-left
   three times**, each tap within 2 seconds of the last. Only the two top corners
-  count — roughly a quarter of the width and the top 15% of the height — and a
-  tap anywhere else is ignored rather than breaking the sequence, so ordinary
+  count — see `CornerWidthRatio` and `CornerHeightRatio` in `DebugOverlay` — and
+  a tap anywhere else is ignored rather than breaking the sequence, so ordinary
   play does not interfere. Taps are read from IMGUI events, so this works
   whichever input backend the project uses.
 - Press `Alt+D` in the editor, or use `Tools → Liang Tools → Debug Overlay`.
@@ -162,6 +162,17 @@ The sequence is `TapGesture.DefaultPattern`; pass your own `TapStep[]` of
 
 The overlay exists only during Play mode — it is bootstrapped by
 `[RuntimeInitializeOnLoadMethod]`, so nothing shows in edit mode.
+
+While it is open it stops clicks reaching the game. IMGUI has no raycast target
+and draws on a separate pass from uGUI, so a tap would otherwise be delivered to
+both. Two things happen: the active `EventSystem` is disabled for as long as the
+overlay is open (found by reflection, so ugui stays an optional dependency), and
+any mouse or touch event the panel's own controls did not claim is consumed.
+
+Code that reads input directly rather than through uGUI is not covered by
+either — nothing can intercept that from outside. Check `LiangDebug.IsOpen`
+before acting on a tap in that case; it is always `false` in a build without the
+overlay, so the guard costs nothing there.
 
 **FPS** — current, average, min and max frame rate plus frame time, a reset
 button, and target frame rate / VSync / time scale with 30 · 60 · uncapped
@@ -272,8 +283,8 @@ Samples~/         Imported on demand via the Package Manager
 2. Commit, then tag and push:
 
 ```
-git tag v1.6.0
+git tag v1.6.1
 git push origin main --tags
 ```
 
-Consumers install that exact tag with `#v1.6.0`.
+Consumers install that exact tag with `#v1.6.1`.
