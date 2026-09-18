@@ -1,7 +1,7 @@
 {
   "name": "com.liang.tools",
   "displayName": "Liang Tools",
-  "version": "1.6.2",
+  "version": "1.7.0",
   "unity": "2022.3",
   "description": "A collection of Unity editor and runtime utilities.",
   "keywords": [
@@ -9,8 +9,10 @@
     "editor",
     "utility",
     "scene",
-    "timescale",
-    "workflow"
+    "workflow",
+    "debug",
+    "texture-array",
+    "shader"
   ],
   "author": {
     "name": "Liang"

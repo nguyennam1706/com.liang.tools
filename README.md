@@ -20,7 +20,7 @@ https://github.com/nguyennam1706/com.liang.tools.git
 Pin to a released version (recommended for production):
 
 ```
-https://github.com/nguyennam1706/com.liang.tools.git#v1.6.2
+https://github.com/nguyennam1706/com.liang.tools.git#v1.7.0
 ```
 
 The SSH remote `git@github.com:nguyennam1706/com.liang.tools.git` works too, and
@@ -35,7 +35,7 @@ Add the entry directly to `Packages/manifest.json`:
 ```json
 {
   "dependencies": {
-    "com.liang.tools": "https://github.com/nguyennam1706/com.liang.tools.git#v1.6.2"
+    "com.liang.tools": "https://github.com/nguyennam1706/com.liang.tools.git#v1.7.0"
   }
 }
 ```
@@ -138,6 +138,37 @@ start of `ToolbarZonePlayMode` rather than appended.
 
 Unity 6.3 also lets you drag toolbar elements around and remembers the
 arrangement, so you can move them from there.
+
+### Texture Array Builder
+
+`Tools → Liang Tools → Texture Array Builder` packs an ordered list of textures
+into a `Texture2DArray` asset. Drag textures into the drop area or add rows by
+hand, reorder them — the row order is the layer order — and the asset is written
+next to the first texture.
+
+Every layer has to match layer 0 in **size, format and mip count**; the window
+says which layer and what differs. Mip count matters as much as the other two:
+the array is allocated from the first texture, and a layer that leaves a mip
+level unwritten renders magenta along with everything using the array. A texture
+with *Generate Mip Maps* switched off is the usual cause.
+
+Layers are filled with `Graphics.CopyTexture`, so the source textures do not need
+*Read/Write Enabled*. Rebuilding over an existing asset writes into the same
+object, so materials already pointing at it keep working.
+
+### Shaders
+
+Two unlit, double-sided, GPU-instanced shaders:
+
+| Shader | Use |
+| --- | --- |
+| `Percas/UnlitTexture` | Plain texture with a tint |
+| `Percas/UnlitTextureArray` | Samples a `Texture2DArray`; the layer index and tint are per-instance properties, so one material can draw many objects showing different layers in a single batch |
+
+They are written against the built-in pipeline (`CGPROGRAM`, `UnityCG.cginc`),
+which renders correctly under URP as well since they are unlit. The trade-off is
+no SRP Batcher support — GPU instancing still applies, which is the point of the
+array variant.
 
 ### Debug Overlay
 
@@ -294,8 +325,8 @@ Samples~/         Imported on demand via the Package Manager
 2. Commit, then tag and push:
 
 ```
-git tag v1.6.2
+git tag v1.7.0
 git push origin main --tags
 ```
 
-Consumers install that exact tag with `#v1.6.2`.
+Consumers install that exact tag with `#v1.7.0`.

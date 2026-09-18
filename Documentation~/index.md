@@ -125,6 +125,26 @@ Recompile is disabled rather than hidden while unavailable: Unity silently drops
 a compilation request during Play mode or an in-flight compile, so a button that
 looked live but did nothing would be worse than a greyed-out one.
 
+## Texture Array Builder
+
+`Editor/TextureArray/TextureArrayBuilderWindow.cs` is the whole tool;
+`Runtime/Shaders` holds the two shaders that consume the result.
+
+Three things there are easy to get wrong:
+
+- **Mip count is a validation rule, not a clamp.** The array is allocated from
+  layer 0, and `Graphics.CopyTexture` only fills the levels it is asked for; any
+  mip left unwritten makes the whole array sample as magenta. Layers must match
+  layer 0 in size, format *and* mip count.
+- **Overwrite writes into the existing object.** `EditorUtility.CopySerialized`
+  onto the asset already at the path keeps its fileID, so materials and
+  references do not go missing. Creating a new asset would break them.
+- **`name` is assigned before `CopySerialized`,** because the copy carries the
+  name across and would otherwise stamp an empty one onto the existing asset.
+
+The shaders keep their original GUIDs from before they moved into the package, so
+materials built against them still resolve.
+
 ## Adding a new tool
 
 Runtime code goes under `Runtime/` in the `LiangTools` namespace. Editor-only code goes under `Editor/` in `LiangTools.Editor`; it may reference runtime types, never the reverse.

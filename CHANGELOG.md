@@ -5,6 +5,28 @@ All notable changes to this package are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2026-09-18
+
+### Added
+
+- Texture Array Builder at `Tools → Liang Tools → Texture Array Builder`: packs an
+  ordered, reorderable list of textures into a `Texture2DArray` written beside the
+  first texture. Layers are filled with `Graphics.CopyTexture`, so sources need no
+  *Read/Write Enabled*, and rebuilding over an existing asset writes into the same
+  object so existing references survive.
+- `Percas/UnlitTexture` and `Percas/UnlitTextureArray` shaders — unlit,
+  double-sided, GPU-instanced; the array variant takes its layer index and tint as
+  per-instance properties.
+
+### Fixed
+
+- The builder now rejects a layer whose mip count differs from layer 0. It
+  previously copied `min(texture, array)` mip levels, leaving the remaining levels
+  of that layer unwritten, which renders magenta — a texture with *Generate Mip
+  Maps* off silently produced a broken array.
+- It also checks `SystemInfo.copyTextureSupport` before starting, rather than
+  failing part-way through.
+
 ## [1.6.2] - 2026-09-17
 
 ### Fixed
