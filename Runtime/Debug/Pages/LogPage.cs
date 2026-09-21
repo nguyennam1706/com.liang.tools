@@ -71,6 +71,10 @@ namespace LiangTools.Debugging
             if (ui.Section("Detail"))
             {
                 ui.TextBlock(ReadDetail());
+
+                // Copying is the point of the detail view: a stack trace is what gets
+                // pasted into a bug report, and it cannot be selected on a phone.
+                ui.Copy("Copy full details", _selected < 0 ? null : DebugLogStore.GetDetail(_selected));
             }
 
             if (ui.Section("Manage"))

@@ -5,6 +5,27 @@ All notable changes to this package are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.1] - 2026-09-21
+
+### Fixed
+
+- The overlay could not be scrolled on a phone. IMGUI scroll views respond only
+  to the scrollbar and the mouse wheel, so dragging the content is now handled
+  directly, with a small threshold that keeps a tap from registering as a scroll.
+  Table rows are selected on release and skipped entirely while swiping, so
+  scrolling no longer selects a row by accident.
+- Text ran past the right edge of the screen. `Key` and `Value` were unwrapped
+  and unconstrained, and with the horizontal scrollbar hidden anything too wide
+  simply spilled out. The overlay now passes the real viewport width to `DebugUi`
+  and every control sizes against it; keys clip to one line, values wrap, and a
+  table's last column takes exactly the space that is left instead of expanding.
+
+### Added
+
+- **Copy full details** on the Logs page, which copies the selected line's message
+  and stack. Text cannot be selected on a phone, and the stack trace is what goes
+  into a bug report.
+
 ## [1.7.0] - 2026-09-18
 
 ### Added

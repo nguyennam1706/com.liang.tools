@@ -20,6 +20,25 @@ namespace LiangTools.Debugging
         private string _openSection;
         private string _pendingConfirm;
         private int _rowIndex;
+        private float _contentWidth;
+
+        /// <summary>
+        /// Set by the overlay each frame: the usable width inside the scroll view.
+        /// Every control sizes against it, because IMGUI will happily lay a label out
+        /// past the viewport and the horizontal scrollbar is hidden.
+        /// </summary>
+        internal float ContentWidth
+        {
+            get => _contentWidth;
+            set => _contentWidth = value;
+        }
+
+        /// <summary>Set while a drag-scroll is in progress, so a swipe does not select a row.</summary>
+        internal bool SuppressClicks { get; set; }
+
+        private float KeyWidth => _contentWidth > 0f ? _contentWidth * 0.40f : _skin.Scaled(150f);
+
+        private float ValueWidth => _contentWidth > 0f ? _contentWidth * 0.52f : _skin.Scaled(190f);
 
         internal DebugUi(DebugSkin skin)
         {
@@ -81,12 +100,12 @@ namespace LiangTools.Debugging
         public void Row(string key, string value, DebugTone tone)
         {
             GUILayout.BeginHorizontal(NextRowStyle());
-            GUILayout.Label(key, _skin.Key);
+            GUILayout.Label(key, _skin.Key, GUILayout.Width(KeyWidth));
             GUILayout.FlexibleSpace();
 
             using (new GuiColorScope(DebugSkin.ToneColor(tone)))
             {
-                GUILayout.Label(value ?? "—", _skin.Value);
+                GUILayout.Label(value ?? "—", _skin.Value, GUILayout.Width(ValueWidth));
             }
 
             GUILayout.EndHorizontal();
@@ -94,14 +113,17 @@ namespace LiangTools.Debugging
 
         public void CopyRow(string key, string value)
         {
+            var buttonWidth = _skin.Scaled(48f);
+
             GUILayout.BeginHorizontal(NextRowStyle());
-            GUILayout.Label(key, _skin.Key);
+            GUILayout.Label(key, _skin.Key, GUILayout.Width(KeyWidth));
             GUILayout.FlexibleSpace();
-            GUILayout.Label(value ?? "—", _skin.Value);
+            GUILayout.Label(value ?? "—", _skin.Value,
+                GUILayout.Width(Mathf.Max(_skin.Scaled(40f), ValueWidth - buttonWidth)));
 
             using (new GuiEnabledScope(!string.IsNullOrEmpty(value)))
             {
-                if (GUILayout.Button("copy", _skin.SmallButton, GUILayout.Width(_skin.Scaled(48f))))
+                if (GUILayout.Button("copy", _skin.SmallButton, GUILayout.Width(buttonWidth)))
                 {
                     GUIUtility.systemCopyBuffer = value;
                     Toast($"Copied {key}");
@@ -113,7 +135,15 @@ namespace LiangTools.Debugging
 
         public void TextBlock(string text)
         {
-            GUILayout.Label(string.IsNullOrEmpty(text) ? "—" : text, _skin.TextBlock);
+            var content = string.IsNullOrEmpty(text) ? "—" : text;
+
+            if (_contentWidth > 0f)
+            {
+                GUILayout.Label(content, _skin.TextBlock, GUILayout.Width(_contentWidth));
+                return;
+            }
+
+            GUILayout.Label(content, _skin.TextBlock);
         }
 
         public void Copy(string label, string value)
@@ -170,7 +200,7 @@ namespace LiangTools.Debugging
         public bool Toggle(string label, bool value)
         {
             GUILayout.BeginHorizontal(NextRowStyle());
-            GUILayout.Label(label, _skin.Key);
+            GUILayout.Label(label, _skin.Key, GUILayout.Width(KeyWidth));
             GUILayout.FlexibleSpace();
 
             var style = value ? _skin.PillOn : _skin.PillOff;
@@ -186,7 +216,7 @@ namespace LiangTools.Debugging
         public float Slider(string label, float value, float min, float max)
         {
             GUILayout.BeginHorizontal(NextRowStyle());
-            GUILayout.Label(label, _skin.Key);
+            GUILayout.Label(label, _skin.Key, GUILayout.Width(KeyWidth));
             var result = GUILayout.HorizontalSlider(value, min, max, _skin.Slider, _skin.SliderThumb);
 
             using (new GuiColorScope(DebugSkin.ToneColor(DebugTone.Normal)))
@@ -250,7 +280,12 @@ namespace LiangTools.Debugging
                 GUILayout.EndHorizontal();
 
                 var rect = GUILayoutUtility.GetLastRect();
-                if (Event.current.type == EventType.MouseDown && rect.Contains(Event.current.mousePosition))
+
+                // MouseUp rather than MouseDown, and never while the user is swiping:
+                // on a touch screen a scroll starts with a press on a row.
+                if (!SuppressClicks &&
+                    Event.current.type == EventType.MouseUp &&
+                    rect.Contains(Event.current.mousePosition))
                 {
                     clicked = index;
                     Event.current.Use();
@@ -275,7 +310,23 @@ namespace LiangTools.Debugging
                 return GUILayout.Width(_skin.Scaled(widths[column]));
             }
 
-            return GUILayout.ExpandWidth(true);
+            if (_contentWidth <= 0f)
+            {
+                return GUILayout.ExpandWidth(true);
+            }
+
+            // The last column takes what is left. Expanding instead lets a long line
+            // push the row past the viewport, which is what made text run off-screen.
+            var used = 0f;
+            if (widths != null)
+            {
+                for (var i = 0; i < widths.Length && i < columnCount - 1; i++)
+                {
+                    used += _skin.Scaled(widths[i]);
+                }
+            }
+
+            return GUILayout.Width(Mathf.Max(_skin.Scaled(60f), _contentWidth - used - _skin.Scaled(24f)));
         }
 
         private static void Toast(string message)

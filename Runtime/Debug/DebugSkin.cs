@@ -93,7 +93,14 @@ namespace LiangTools.Debugging
                 normal = { textColor = TextMuted }
             };
 
-            Key = new GUIStyle(Label) { normal = { textColor = TextMuted }, wordWrap = false };
+            // Clipped, not wrapped: a long key stays one line, and without clipping IMGUI
+            // draws it straight past the width it was given.
+            Key = new GUIStyle(Label)
+            {
+                normal = { textColor = TextMuted },
+                wordWrap = false,
+                clipping = TextClipping.Clip
+            };
             Value = new GUIStyle(Label) { alignment = TextAnchor.MiddleRight };
             Cell = new GUIStyle(Label)
             {

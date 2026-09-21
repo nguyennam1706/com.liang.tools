@@ -16,6 +16,9 @@ namespace LiangTools.Debugging
         private DebugSkin _skin;
         private DebugUi _ui;
         private Vector2 _scroll;
+        private Rect _scrollViewRect;
+        private Vector2 _dragOrigin;
+        private bool _dragScrolling;
         private int _pageIndex;
         private string _toast;
         private float _toastUntil;
@@ -278,11 +281,18 @@ namespace LiangTools.Debugging
                 _pageIndex = Mathf.Clamp(_pageIndex, 0, pages.Count - 1);
                 DrawTabs(pages, area.width - _skin.Scaled(28f));
 
+                // Leave room for the vertical scrollbar so nothing sits under it.
+                _ui.ContentWidth = area.width - _skin.Scaled(28f) - GUI.skin.verticalScrollbar.fixedWidth;
+                _ui.SuppressClicks = _dragScrolling;
+
                 _scroll = GUILayout.BeginScrollView(_scroll, GUIStyle.none, GUI.skin.verticalScrollbar);
                 pages[_pageIndex].Draw(_ui);
                 _ui.EndSection();
                 GUILayout.Space(_skin.Scaled(8f));
                 GUILayout.EndScrollView();
+
+                _scrollViewRect = GUILayoutUtility.GetLastRect();
+                HandleDragScroll();
             }
             else
             {
@@ -290,6 +300,46 @@ namespace LiangTools.Debugging
             }
 
             GUILayout.EndArea();
+        }
+
+        // IMGUI scroll views only respond to the scrollbar and the wheel, neither of
+        // which exists on a phone, so dragging the content is implemented here. The
+        // threshold keeps a tap from registering as a tiny scroll.
+        private void HandleDragScroll()
+        {
+            var current = Event.current;
+            if (current == null)
+            {
+                return;
+            }
+
+            switch (current.type)
+            {
+                case EventType.MouseDown:
+                    _dragOrigin = current.mousePosition;
+                    _dragScrolling = false;
+                    break;
+
+                case EventType.MouseDrag:
+                    if (!_dragScrolling)
+                    {
+                        if (!_scrollViewRect.Contains(_dragOrigin) ||
+                            Vector2.Distance(current.mousePosition, _dragOrigin) < _skin.Scaled(6f))
+                        {
+                            break;
+                        }
+
+                        _dragScrolling = true;
+                    }
+
+                    _scroll.y = Mathf.Max(0f, _scroll.y - current.delta.y);
+                    current.Use();
+                    break;
+
+                case EventType.MouseUp:
+                    _dragScrolling = false;
+                    break;
+            }
         }
 
         private void DrawHeader(System.Collections.Generic.IReadOnlyList<IDebugPage> pages)

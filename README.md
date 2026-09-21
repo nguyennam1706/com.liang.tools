@@ -20,7 +20,7 @@ https://github.com/nguyennam1706/com.liang.tools.git
 Pin to a released version (recommended for production):
 
 ```
-https://github.com/nguyennam1706/com.liang.tools.git#v1.7.0
+https://github.com/nguyennam1706/com.liang.tools.git#v1.7.1
 ```
 
 The SSH remote `git@github.com:nguyennam1706/com.liang.tools.git` works too, and
@@ -35,7 +35,7 @@ Add the entry directly to `Packages/manifest.json`:
 ```json
 {
   "dependencies": {
-    "com.liang.tools": "https://github.com/nguyennam1706/com.liang.tools.git#v1.7.0"
+    "com.liang.tools": "https://github.com/nguyennam1706/com.liang.tools.git#v1.7.1"
   }
 }
 ```
@@ -194,6 +194,11 @@ The sequence is `TapGesture.DefaultPattern`; pass your own `TapStep[]` of
 The overlay exists only during Play mode — it is bootstrapped by
 `[RuntimeInitializeOnLoadMethod]`, so nothing shows in edit mode.
 
+Drag anywhere on the panel to scroll: IMGUI scroll views only answer to the
+scrollbar and the mouse wheel, neither of which a phone has. A row is selected on
+release, and not at all if you were swiping, so scrolling does not pick rows by
+accident.
+
 While it is open, every active raycaster in the scene is switched off, so taps on
 the panel cannot also hit the game's UI; they are switched back on when it closes
 or is destroyed. Mouse and touch events the panel's own controls did not claim
@@ -225,8 +230,8 @@ closed; that choice persists in `PlayerPrefs`.
 default: with capture disabled no listener is registered, so a normal player's
 log calls cost nothing. Enable it and the choice is remembered, so the next run
 captures from startup — the page says which of the two you are looking at.
-Filter by log / warning / error, tap a row for the full message and stack, copy
-the whole log to the clipboard. Error and warning counts appear on the tab, so
+Filter by log / warning / error, tap a row for the full message and stack,
+**Copy full details** for that one line, or copy the whole log. Error and warning counts appear on the tab, so
 something going wrong is visible without opening the page.
 
 It keeps the last 300 lines in a fixed ring buffer, gated by a lock because logs
@@ -325,8 +330,8 @@ Samples~/         Imported on demand via the Package Manager
 2. Commit, then tag and push:
 
 ```
-git tag v1.7.0
+git tag v1.7.1
 git push origin main --tags
 ```
 
-Consumers install that exact tag with `#v1.7.0`.
+Consumers install that exact tag with `#v1.7.1`.
