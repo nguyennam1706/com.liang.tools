@@ -20,7 +20,7 @@ https://github.com/nguyennam1706/com.liang.tools.git
 Pin to a released version (recommended for production):
 
 ```
-https://github.com/nguyennam1706/com.liang.tools.git#v1.7.1
+https://github.com/nguyennam1706/com.liang.tools.git#v1.8.0
 ```
 
 The SSH remote `git@github.com:nguyennam1706/com.liang.tools.git` works too, and
@@ -35,7 +35,7 @@ Add the entry directly to `Packages/manifest.json`:
 ```json
 {
   "dependencies": {
-    "com.liang.tools": "https://github.com/nguyennam1706/com.liang.tools.git#v1.7.1"
+    "com.liang.tools": "https://github.com/nguyennam1706/com.liang.tools.git#v1.8.0"
   }
 }
 ```
@@ -185,8 +185,14 @@ Opening it, in Play mode:
   whichever input backend the project uses.
 - Press `Alt+D` in the editor, or use `Tools → Liang Tools → Debug Overlay`.
 - Call `LiangDebug.Toggle()` from your own code or your own input binding.
-- Turn on *Show a button to reopen this overlay* on the FPS page to keep a small
-  `≡` button in the top-right corner; the choice persists in `PlayerPrefs`.
+- Keep a `≡` button in the top-right corner and open it in one press. Turn this
+  on in **Project Settings → Liang Tools → Debug Overlay**, where the same page
+  can also switch the tap sequence off entirely. Those two are scripting defines
+  (`LIANG_TOOLS_DEBUG_BUTTON`, `LIANG_TOOLS_DEBUG_NO_GESTURE`) rather than
+  preferences, because the choice has to reach a build running on a device —
+  `PlayerPrefs` set in the editor do not travel there.
+- The FPS page has the same button toggle for the current run only; the project
+  setting overrides it when on.
 
 The sequence is `TapGesture.DefaultPattern`; pass your own `TapStep[]` of
 `ScreenCorner.TopLeft` / `TopRight` to `new TapGesture(...)` to change it.
@@ -330,8 +336,8 @@ Samples~/         Imported on demand via the Package Manager
 2. Commit, then tag and push:
 
 ```
-git tag v1.7.1
+git tag v1.8.0
 git push origin main --tags
 ```
 
-Consumers install that exact tag with `#v1.7.1`.
+Consumers install that exact tag with `#v1.8.0`.

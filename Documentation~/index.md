@@ -78,6 +78,13 @@ both defines removed: 34.3 KB drops to 23.0 KB and the overlay types are gone.
 `DebugLogStore` survives, but its `[RuntimeInitializeOnLoadMethod]` is gated too,
 so nothing touches the ring buffer and it is never allocated.
 
+`DebugDefines` handles three symbols: `LIANG_TOOLS_DEBUG` compiles the overlay
+into non-development builds, `LIANG_TOOLS_DEBUG_BUTTON` forces the on-screen open
+button, and `LIANG_TOOLS_DEBUG_NO_GESTURE` turns off the tap sequence. Defines
+rather than settings assets because the overlay is runtime code that has to
+behave the same in a player build, where nothing in `ProjectSettings/` is
+readable and editor `PlayerPrefs` do not exist.
+
 `DebugDefineInstaller` writes `LIANG_TOOLS_DEBUG` into the project's scripting
 defines the first time the package loads, so release builds keep the overlay.
 `DebugDefineSettings` records that it ran, in `ProjectSettings/`, so a define

@@ -31,9 +31,33 @@ namespace LiangTools.Debugging
 
         public TapGesture OpenGesture { get; } = new TapGesture();
 
+        /// <summary>
+        /// Whether the open button is forced on by the LIANG_TOOLS_DEBUG_BUTTON define,
+        /// set from Project Settings → Liang Tools → Debug Overlay. A define rather than
+        /// a preference because the choice has to reach a build on a device.
+        /// </summary>
+        public static bool ButtonForced
+        {
+#if LIANG_TOOLS_DEBUG_BUTTON
+            get => true;
+#else
+            get => false;
+#endif
+        }
+
+        /// <summary>Whether the corner tap sequence is available.</summary>
+        public static bool GestureEnabled
+        {
+#if LIANG_TOOLS_DEBUG_NO_GESTURE
+            get => false;
+#else
+            get => true;
+#endif
+        }
+
         public bool ShowHandle
         {
-            get => PlayerPrefs.GetInt(ShowHandleKey, 0) == 1;
+            get => ButtonForced || PlayerPrefs.GetInt(ShowHandleKey, 0) == 1;
             set
             {
                 PlayerPrefs.SetInt(ShowHandleKey, value ? 1 : 0);
@@ -195,7 +219,11 @@ namespace LiangTools.Debugging
 
             if (!IsOpen)
             {
-                DetectOpenGesture(Event.current);
+                if (GestureEnabled)
+                {
+                    DetectOpenGesture(Event.current);
+                }
+
                 DrawFpsOverlay();
                 DrawHandle();
                 return;
