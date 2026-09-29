@@ -1,4 +1,7 @@
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using LiangTools.Debugging;
 using UnityEditor;
 using UnityEngine;
 
@@ -17,6 +20,81 @@ namespace LiangTools.Editor.Debugging
                 guiHandler = _ => DrawGui(),
                 keywords = new HashSet<string> { "debug", "overlay", "fps", "define", "liang", "tools" }
             };
+        }
+
+        // The bottom letter row. A short list rather than the full KeyCode enum, whose
+        // popup runs to ~320 entries and is unusable.
+        private static readonly KeyCode[] Choices =
+        {
+            KeyCode.None,
+            KeyCode.Z, KeyCode.X, KeyCode.C, KeyCode.V,
+            KeyCode.B, KeyCode.N, KeyCode.M
+        };
+
+        private static void DrawOpenKeySection()
+        {
+            EditorGUILayout.LabelField("Opening the overlay", EditorStyles.boldLabel);
+
+            var settings = LiangDebugSettings.Load();
+            var current = settings != null ? settings.OpenKey : LiangDebugSettings.DefaultOpenKey;
+
+            // A key set from code, or left over from an older version, is not in the
+            // list. Show it rather than silently reporting the wrong key.
+            var options = Choices.Contains(current)
+                ? Choices
+                : new[] { current }.Concat(Choices).ToArray();
+
+            var index = System.Array.IndexOf(options, current);
+
+            var labels = options
+                .Select(key => key == KeyCode.None ? "None (disabled)" : key.ToString())
+                .ToArray();
+
+            var picked = EditorGUILayout.Popup(
+                new GUIContent("Open Key", "Pressed in Play mode and in a build to open or close the overlay."),
+                index,
+                labels);
+
+            if (options[picked] != current)
+            {
+                Write(options[picked]);
+            }
+
+            EditorGUILayout.LabelField(
+                "Stored in",
+                settings != null ? AssetDatabase.GetAssetPath(settings) : $"{AssetPath} (created on change)");
+
+            EditorGUILayout.HelpBox(
+                "The key has to reach a build on a device, so it lives in a Resources asset rather " +
+                "than in ProjectSettings. Code can still override it at startup with LiangDebug.OpenKey.",
+                MessageType.None);
+        }
+
+        private const string AssetFolder = "Assets/Resources";
+        private const string AssetPath = AssetFolder + "/" + LiangDebugSettings.ResourceName + ".asset";
+
+        private static void Write(KeyCode key)
+        {
+            var settings = LiangDebugSettings.Load();
+
+            if (settings == null)
+            {
+                if (!Directory.Exists(AssetFolder))
+                {
+                    Directory.CreateDirectory(AssetFolder);
+                    AssetDatabase.Refresh();
+                }
+
+                settings = ScriptableObject.CreateInstance<LiangDebugSettings>();
+                AssetDatabase.CreateAsset(settings, AssetPath);
+            }
+
+            settings.OpenKey = key;
+            EditorUtility.SetDirty(settings);
+            AssetDatabase.SaveAssets();
+
+            // The running session caches the key on first read, so push it through.
+            LiangDebug.OpenKey = key;
         }
 
         private static void DrawGui()
@@ -59,6 +137,8 @@ namespace LiangTools.Editor.Debugging
                 }
             }
 
+            EditorGUILayout.Space();
+            DrawOpenKeySection();
             EditorGUILayout.Space();
 
             if (everywhere)

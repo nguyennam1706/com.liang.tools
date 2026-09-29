@@ -9,12 +9,34 @@ namespace LiangTools.Debugging
 
         private static readonly List<IDebugPage> Pages = new List<IDebugPage>();
 
+        private static KeyCode? _openKey;
+
         /// <summary>
         /// Key that opens and closes the overlay, read through IMGUI so it works under
-        /// either input backend. Assign your own at startup, or
+        /// either input backend. Defaults to whatever is set in
+        /// Project Settings → Liang Tools → Debug Overlay, falling back to M. Assigning
+        /// it here wins over the project setting for the rest of the session; set
         /// <see cref="UnityEngine.KeyCode.None"/> to switch it off.
         /// </summary>
-        public static KeyCode OpenKey { get; set; } = KeyCode.F1;
+        public static KeyCode OpenKey
+        {
+            get
+            {
+                if (_openKey.HasValue)
+                {
+                    return _openKey.Value;
+                }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD || LIANG_TOOLS_DEBUG
+                var settings = LiangDebugSettings.Load();
+                _openKey = settings != null ? settings.OpenKey : LiangDebugSettings.DefaultOpenKey;
+#else
+                _openKey = KeyCode.None;
+#endif
+                return _openKey.Value;
+            }
+            set => _openKey = value;
+        }
 
         public static IReadOnlyList<IDebugPage> RegisteredPages => Pages;
 
@@ -94,7 +116,7 @@ namespace LiangTools.Debugging
         private static void ResetForDomainReload()
         {
             Pages.Clear();
-            OpenKey = KeyCode.F1;
+            _openKey = null;
         }
 #endif
     }

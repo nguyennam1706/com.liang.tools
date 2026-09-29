@@ -5,6 +5,52 @@ All notable changes to this package are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.10.0] - 2026-09-29
+
+### Added
+
+- The overlay's open key is chosen in **Project Settings → Liang Tools → Debug
+  Overlay**, from the bottom letter row — `Z X C V B N M` — or `None` to disable
+  it. The default is `M`. A key set from code or left over from an older version
+  is added to the list rather than silently misreported.
+- `LiangDebugSettings`, a `ScriptableObject` written to
+  `Assets/Resources/LiangToolsDebugSettings.asset` the first time a setting is
+  changed. A `KeyCode` cannot travel in a scripting define, and neither
+  `ProjectSettings/` nor editor `PlayerPrefs` are readable from a player build,
+  so a Resources asset is what reaches a device.
+- The FPS page shows the current open key.
+
+### Changed
+
+- `LiangDebug.OpenKey` reads that asset on first use instead of being a plain
+  field, and still accepts an assignment that overrides it for the session.
+
+## [1.9.0] - 2026-09-29
+
+### Added
+
+- **F1 opens and closes the overlay**, in Play mode and in a build. The key is
+  read through IMGUI events like the taps are, so it needs no input backend.
+
+### Fixed
+
+- The corner tap sequence missed intermittently on device. The zones were
+  measured from the raw top of the screen, which on a phone is the status bar or
+  the notch — taps there are taken by the OS and never reach the game. They are
+  now measured from `Screen.safeArea`, in both orientations.
+- `TouchDown` is accepted alongside `MouseDown`; which of the two IMGUI reports
+  depends on the platform and on whether Unity simulates mouse input from touches.
+- The gap allowed between taps went from 2 to 3 seconds, which is tight for a
+  six-tap sequence.
+
+### Reverted
+
+- The 1.8.0 scripting defines `LIANG_TOOLS_DEBUG_BUTTON` and
+  `LIANG_TOOLS_DEBUG_NO_GESTURE`, along with their Project Settings toggles and
+  `DebugOverlay.ButtonForced` / `GestureEnabled`. The request was for a keyboard
+  key, not an on-screen button. The per-session button toggle on the FPS page is
+  back as it was.
+
 ## [1.7.1] - 2026-09-21
 
 ### Fixed

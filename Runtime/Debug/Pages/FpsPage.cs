@@ -39,6 +39,10 @@ namespace LiangTools.Debugging
                     overlay.ShowFpsOverlay = show;
                 }
 
+                ui.Row("Open key", LiangDebug.OpenKey == UnityEngine.KeyCode.None
+                    ? "disabled"
+                    : LiangDebug.OpenKey.ToString());
+
                 var handle = ui.Toggle("Show a button to reopen this overlay", overlay.ShowHandle);
                 if (handle != overlay.ShowHandle)
                 {

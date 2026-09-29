@@ -86,6 +86,7 @@ per `NamedBuildTarget`, and `DebugOverlaySettingsProvider` exposes it.
 
 | Type | Responsibility |
 | --- | --- |
+| `LiangDebugSettings` | `ScriptableObject` under `Assets/Resources`, holding the open key. Created only when a setting is changed, so a default project gains no file. An asset rather than a define or a `ProjectSettings/` entry because it has to be readable from a player build |
 | `LiangDebug` | Static entry point: page registry (sorted by `Order`), open/close, `IsAvailable` |
 | `IDebugPage` | What a page implements: `Title`, `Order`, `Draw(DebugUi)` |
 | `DebugUi` | Immediate-mode builder. `ContentWidth` is set by the overlay each frame and every control sizes against it: IMGUI lays a label out past the viewport without complaint, and the horizontal scrollbar is hidden, so an unconstrained label is text running off-screen. `SuppressClicks` is set while a drag-scroll is running so a swipe does not select a table row |

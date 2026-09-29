@@ -20,7 +20,7 @@ https://github.com/nguyennam1706/com.liang.tools.git
 Pin to a released version (recommended for production):
 
 ```
-https://github.com/nguyennam1706/com.liang.tools.git#v1.9.0
+https://github.com/nguyennam1706/com.liang.tools.git#v1.10.0
 ```
 
 The SSH remote `git@github.com:nguyennam1706/com.liang.tools.git` works too, and
@@ -35,7 +35,7 @@ Add the entry directly to `Packages/manifest.json`:
 ```json
 {
   "dependencies": {
-    "com.liang.tools": "https://github.com/nguyennam1706/com.liang.tools.git#v1.9.0"
+    "com.liang.tools": "https://github.com/nguyennam1706/com.liang.tools.git#v1.10.0"
   }
 }
 ```
@@ -184,14 +184,20 @@ Opening it, in Play mode:
   a tap anywhere else is ignored rather than breaking the sequence, so ordinary
   play does not interfere. Taps are read from IMGUI events, so this works
   whichever input backend the project uses.
-- Press **F1** — in Play mode and in a build alike. Change it with
-  `LiangDebug.OpenKey = KeyCode.F2;` at startup, or set it to `KeyCode.None` to
-  switch it off. The key is read through IMGUI, so it works under either input
-  backend.
+- Press **M** — in Play mode and in a build alike. Pick a different key in
+  **Project Settings → Liang Tools → Debug Overlay**; the choices are the bottom
+  letter row, `Z X C V B N M`, plus `None` to switch it off. Code can still
+  override it for a session with `LiangDebug.OpenKey = KeyCode.X;`. The key is
+  read through IMGUI, so it works under either input backend.
 - Press `Alt+D` in the editor, or use `Tools → Liang Tools → Debug Overlay`.
 - Call `LiangDebug.Toggle()` from your own code or your own input binding.
 - Turn on *Show a button to reopen this overlay* on the FPS page to keep a small
   `≡` button in the top-right corner; the choice persists in `PlayerPrefs`.
+
+The chosen key is stored in `Assets/Resources/LiangToolsDebugSettings.asset`,
+created the first time you change it. It has to be an asset rather than a
+scripting define or a `ProjectSettings/` entry, because neither can carry a
+`KeyCode` into a build running on a device.
 
 The sequence is `TapGesture.DefaultPattern`; pass your own `TapStep[]` of
 `ScreenCorner.TopLeft` / `TopRight` to `new TapGesture(...)` to change it.
@@ -335,8 +341,8 @@ Samples~/         Imported on demand via the Package Manager
 2. Commit, then tag and push:
 
 ```
-git tag v1.9.0
+git tag v1.10.0
 git push origin main --tags
 ```
 
-Consumers install that exact tag with `#v1.9.0`.
+Consumers install that exact tag with `#v1.10.0`.
