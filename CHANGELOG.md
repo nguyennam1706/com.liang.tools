@@ -5,24 +5,6 @@ All notable changes to this package are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.8.0] - 2026-09-29
-
-### Added
-
-- **Project Settings → Liang Tools → Debug Overlay** gains *Always Show Open
-  Button* and *Disable Tap Sequence*, so the overlay can be opened with one press
-  instead of the corner tap sequence.
-- Both are scripting defines (`LIANG_TOOLS_DEBUG_BUTTON`,
-  `LIANG_TOOLS_DEBUG_NO_GESTURE`) rather than preferences: the existing button
-  toggle lives in `PlayerPrefs`, which is why it could only be reached from
-  inside the overlay and never travelled into a build on a device.
-- `DebugOverlay.ButtonForced` and `DebugOverlay.GestureEnabled` expose the two
-  states. The FPS page shows the button setting as read-only when the project
-  setting forces it on, rather than offering a toggle that does nothing.
-- The settings page warns when the tap sequence is off with no button, leaving
-  only `LiangDebug.Toggle()` and `Alt+D`, and notes that the button ships to
-  players in any build with the overlay compiled in.
-
 ## [1.7.1] - 2026-09-21
 
 ### Fixed

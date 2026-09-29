@@ -20,7 +20,7 @@ https://github.com/nguyennam1706/com.liang.tools.git
 Pin to a released version (recommended for production):
 
 ```
-https://github.com/nguyennam1706/com.liang.tools.git#v1.8.0
+https://github.com/nguyennam1706/com.liang.tools.git#v1.9.0
 ```
 
 The SSH remote `git@github.com:nguyennam1706/com.liang.tools.git` works too, and
@@ -35,7 +35,7 @@ Add the entry directly to `Packages/manifest.json`:
 ```json
 {
   "dependencies": {
-    "com.liang.tools": "https://github.com/nguyennam1706/com.liang.tools.git#v1.8.0"
+    "com.liang.tools": "https://github.com/nguyennam1706/com.liang.tools.git#v1.9.0"
   }
 }
 ```
@@ -179,20 +179,19 @@ Opening it, in Play mode:
 
 - Tap the **top-left corner once, the top-right corner twice, then the top-left
   three times**, each tap within 2 seconds of the last. Only the two top corners
-  count — see `CornerWidthRatio` and `CornerHeightRatio` in `DebugOverlay` — and
+  count — sized from `Screen.safeArea`, not the raw screen, so the zones sit
+  below the status bar or notch rather than under it — and
   a tap anywhere else is ignored rather than breaking the sequence, so ordinary
   play does not interfere. Taps are read from IMGUI events, so this works
   whichever input backend the project uses.
+- Press **F1** — in Play mode and in a build alike. Change it with
+  `LiangDebug.OpenKey = KeyCode.F2;` at startup, or set it to `KeyCode.None` to
+  switch it off. The key is read through IMGUI, so it works under either input
+  backend.
 - Press `Alt+D` in the editor, or use `Tools → Liang Tools → Debug Overlay`.
 - Call `LiangDebug.Toggle()` from your own code or your own input binding.
-- Keep a `≡` button in the top-right corner and open it in one press. Turn this
-  on in **Project Settings → Liang Tools → Debug Overlay**, where the same page
-  can also switch the tap sequence off entirely. Those two are scripting defines
-  (`LIANG_TOOLS_DEBUG_BUTTON`, `LIANG_TOOLS_DEBUG_NO_GESTURE`) rather than
-  preferences, because the choice has to reach a build running on a device —
-  `PlayerPrefs` set in the editor do not travel there.
-- The FPS page has the same button toggle for the current run only; the project
-  setting overrides it when on.
+- Turn on *Show a button to reopen this overlay* on the FPS page to keep a small
+  `≡` button in the top-right corner; the choice persists in `PlayerPrefs`.
 
 The sequence is `TapGesture.DefaultPattern`; pass your own `TapStep[]` of
 `ScreenCorner.TopLeft` / `TopRight` to `new TapGesture(...)` to change it.
@@ -336,8 +335,8 @@ Samples~/         Imported on demand via the Package Manager
 2. Commit, then tag and push:
 
 ```
-git tag v1.8.0
+git tag v1.9.0
 git push origin main --tags
 ```
 
-Consumers install that exact tag with `#v1.8.0`.
+Consumers install that exact tag with `#v1.9.0`.

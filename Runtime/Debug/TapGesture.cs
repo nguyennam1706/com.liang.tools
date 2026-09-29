@@ -35,7 +35,7 @@ namespace LiangTools.Debugging
         private int _matched;
         private float _lastTapTime;
 
-        public TapGesture(IReadOnlyList<TapStep> pattern = null, float timeoutSeconds = 2f)
+        public TapGesture(IReadOnlyList<TapStep> pattern = null, float timeoutSeconds = 3f)
         {
             _sequence = Flatten(pattern ?? DefaultPattern);
             _timeout = timeoutSeconds;

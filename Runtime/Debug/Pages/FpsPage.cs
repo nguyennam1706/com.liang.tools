@@ -39,18 +39,10 @@ namespace LiangTools.Debugging
                     overlay.ShowFpsOverlay = show;
                 }
 
-                if (DebugOverlay.ButtonForced)
+                var handle = ui.Toggle("Show a button to reopen this overlay", overlay.ShowHandle);
+                if (handle != overlay.ShowHandle)
                 {
-                    // The define wins, so a toggle here would look broken.
-                    ui.Row("Open button", "always on (project setting)");
-                }
-                else
-                {
-                    var handle = ui.Toggle("Show a button to reopen this overlay", overlay.ShowHandle);
-                    if (handle != overlay.ShowHandle)
-                    {
-                        overlay.ShowHandle = handle;
-                    }
+                    overlay.ShowHandle = handle;
                 }
             }
 

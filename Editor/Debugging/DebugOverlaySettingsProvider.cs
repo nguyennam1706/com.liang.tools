@@ -19,57 +19,6 @@ namespace LiangTools.Editor.Debugging
             };
         }
 
-        // How the overlay is opened. These are scripting defines rather than PlayerPrefs
-        // because the choice has to travel into a build on a device, where the editor's
-        // PlayerPrefs do not exist.
-        private static void DrawOpeningSection()
-        {
-            EditorGUILayout.LabelField("Opening the overlay", EditorStyles.boldLabel);
-
-            var button = DebugDefines.IsEnabledEverywhere(DebugDefines.ButtonSymbol);
-            var noGesture = DebugDefines.IsEnabledEverywhere(DebugDefines.NoGestureSymbol);
-
-            var newButton = EditorGUILayout.Toggle(
-                new GUIContent(
-                    "Always Show Open Button",
-                    "Keeps a button on screen that opens the overlay in one press, instead of " +
-                    "needing the corner tap sequence."),
-                button);
-
-            if (newButton != button)
-            {
-                DebugDefines.SetEnabled(newButton, DebugDefines.ButtonSymbol);
-                button = newButton;
-            }
-
-            var newNoGesture = EditorGUILayout.Toggle(
-                new GUIContent(
-                    "Disable Tap Sequence",
-                    "Turns off the top-corner tap sequence entirely."),
-                noGesture);
-
-            if (newNoGesture != noGesture)
-            {
-                DebugDefines.SetEnabled(newNoGesture, DebugDefines.NoGestureSymbol);
-                noGesture = newNoGesture;
-            }
-
-            if (noGesture && !button)
-            {
-                EditorGUILayout.HelpBox(
-                    "With the tap sequence off and no button, the overlay can only be opened from " +
-                    "code with LiangDebug.Toggle(), or with Alt+D in the editor.",
-                    MessageType.Warning);
-            }
-            else if (button)
-            {
-                EditorGUILayout.HelpBox(
-                    "A button sits in the top-right corner of the screen in every build that has " +
-                    "the overlay compiled in, players included. Turn it off before a public release.",
-                    MessageType.Info);
-            }
-        }
-
         private static void DrawGui()
         {
             EditorGUILayout.LabelField("Scripting Define", EditorStyles.boldLabel);
@@ -110,8 +59,6 @@ namespace LiangTools.Editor.Debugging
                 }
             }
 
-            EditorGUILayout.Space();
-            DrawOpeningSection();
             EditorGUILayout.Space();
 
             if (everywhere)

@@ -78,13 +78,6 @@ both defines removed: 34.3 KB drops to 23.0 KB and the overlay types are gone.
 `DebugLogStore` survives, but its `[RuntimeInitializeOnLoadMethod]` is gated too,
 so nothing touches the ring buffer and it is never allocated.
 
-`DebugDefines` handles three symbols: `LIANG_TOOLS_DEBUG` compiles the overlay
-into non-development builds, `LIANG_TOOLS_DEBUG_BUTTON` forces the on-screen open
-button, and `LIANG_TOOLS_DEBUG_NO_GESTURE` turns off the tap sequence. Defines
-rather than settings assets because the overlay is runtime code that has to
-behave the same in a player build, where nothing in `ProjectSettings/` is
-readable and editor `PlayerPrefs` do not exist.
-
 `DebugDefineInstaller` writes `LIANG_TOOLS_DEBUG` into the project's scripting
 defines the first time the package loads, so release builds keep the overlay.
 `DebugDefineSettings` records that it ran, in `ProjectSettings/`, so a define
@@ -99,7 +92,7 @@ per `NamedBuildTarget`, and `DebugOverlaySettingsProvider` exposes it.
 | `DebugSkin` | Every style, built once and scaled by `Screen.dpi`. Nothing inherits `GUI.skin`. Backgrounds are generated textures: `Rounded` builds a nine-slice rounded rectangle of side `2r+1` with `border = r`, so the single middle pixel stretches while the corners stay sharp; corner coverage comes from the signed distance to the shape's edge, clamped to one pixel, which is what antialiases it |
 | `InputBlocker` | Disables every active `BaseRaycaster` while the overlay is open, so uGUI finds nothing under the pointer. The type is resolved with `Type.GetType` rather than referenced, keeping ugui an optional dependency; each disabled `Behaviour` is remembered so it can be switched back on, including when the overlay is destroyed mid-session. It must not disable the `EventSystem` instead: `EventSystem.current` reads the first entry of a list the component leaves in `OnDisable`, so that turns the property null and makes `EventSystem.current.IsPointerOverGameObject()` throw in any project that calls it |
 | `DebugOverlay` | `MonoBehaviour` bootstrapped by `[RuntimeInitializeOnLoadMethod]`, `DontDestroyOnLoad`, owns the FPS sampler, and reads the open gesture from `Event.current` so it is independent of the project's input backend |
-| `TapGesture` | The open sequence, as a flattened list of screen corners. A tap that breaks the sequence restarts it immediately if it matches the first step, rather than forcing a wait for the timeout. No UnityEngine dependency, so it is tested directly. `DebugOverlay.TryResolveCorner` does the hit test — IMGUI coordinates start top-left, so the corner band is small y — and returns false for anything outside the two corners, which the gesture treats as "not a tap" rather than a miss |
+| `TapGesture` | The open sequence, as a flattened list of screen corners. `DebugOverlay.TryResolveCorner` measures the zones from `Screen.safeArea` rather than the screen: the top strip of a phone is the status bar or notch, and taps there go to the OS, which is why the gesture used to miss intermittently on device. A tap that breaks the sequence restarts it immediately if it matches the first step, rather than forcing a wait for the timeout. No UnityEngine dependency, so it is tested directly. `DebugOverlay.TryResolveCorner` does the hit test — IMGUI coordinates start top-left, so the corner band is small y — and returns false for anything outside the two corners, which the gesture treats as "not a tap" rather than a miss |
 | `FpsCounter` | Ring-buffer sampler with a running sum, so `Average` costs one add and one subtract per frame rather than a scan |
 | `DebugLogStore` | Session log: a fixed 300-entry ring buffer behind a lock, since `Application.logMessageReceivedThreaded` fires off-thread. Repeated lines collapse into a counter instead of taking a slot; timestamp text is built on read and cached per second, never on the capture path; row arrays are pooled because the page re-reads every repaint; plain logs drop their stack. A snapshot of the last read keeps a tapped row index resolving to the same entry when newer lines arrive |
 | `FpsPage`, `LogPage`, `SystemInfoPage` | The three built-in pages |

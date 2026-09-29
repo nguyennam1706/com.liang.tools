@@ -9,6 +9,13 @@ namespace LiangTools.Debugging
 
         private static readonly List<IDebugPage> Pages = new List<IDebugPage>();
 
+        /// <summary>
+        /// Key that opens and closes the overlay, read through IMGUI so it works under
+        /// either input backend. Assign your own at startup, or
+        /// <see cref="UnityEngine.KeyCode.None"/> to switch it off.
+        /// </summary>
+        public static KeyCode OpenKey { get; set; } = KeyCode.F1;
+
         public static IReadOnlyList<IDebugPage> RegisteredPages => Pages;
 
         public static bool IsAvailable
@@ -87,6 +94,7 @@ namespace LiangTools.Debugging
         private static void ResetForDomainReload()
         {
             Pages.Clear();
+            OpenKey = KeyCode.F1;
         }
 #endif
     }

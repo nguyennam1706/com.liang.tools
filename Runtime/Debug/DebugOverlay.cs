@@ -31,33 +31,9 @@ namespace LiangTools.Debugging
 
         public TapGesture OpenGesture { get; } = new TapGesture();
 
-        /// <summary>
-        /// Whether the open button is forced on by the LIANG_TOOLS_DEBUG_BUTTON define,
-        /// set from Project Settings → Liang Tools → Debug Overlay. A define rather than
-        /// a preference because the choice has to reach a build on a device.
-        /// </summary>
-        public static bool ButtonForced
-        {
-#if LIANG_TOOLS_DEBUG_BUTTON
-            get => true;
-#else
-            get => false;
-#endif
-        }
-
-        /// <summary>Whether the corner tap sequence is available.</summary>
-        public static bool GestureEnabled
-        {
-#if LIANG_TOOLS_DEBUG_NO_GESTURE
-            get => false;
-#else
-            get => true;
-#endif
-        }
-
         public bool ShowHandle
         {
-            get => ButtonForced || PlayerPrefs.GetInt(ShowHandleKey, 0) == 1;
+            get => PlayerPrefs.GetInt(ShowHandleKey, 0) == 1;
             set
             {
                 PlayerPrefs.SetInt(ShowHandleKey, value ? 1 : 0);
@@ -159,9 +135,28 @@ namespace LiangTools.Debugging
             Fps.Sample(Time.unscaledDeltaTime);
         }
 
+        // Read through IMGUI like the taps are, so it works whichever input backend the
+        // project uses. Unity's own Input classes would need one branch per backend.
+        private void HandleOpenKey(Event current)
+        {
+            if (current == null ||
+                current.type != EventType.KeyDown ||
+                LiangDebug.OpenKey == KeyCode.None ||
+                current.keyCode != LiangDebug.OpenKey)
+            {
+                return;
+            }
+
+            SetOpen(!IsOpen);
+            current.Use();
+        }
+
         private void DetectOpenGesture(Event current)
         {
-            if (current == null || current.type != EventType.MouseDown)
+            // TouchDown as well as MouseDown: which of the two IMGUI reports depends on
+            // the platform and on whether Unity is simulating mouse input from touches.
+            if (current == null ||
+                (current.type != EventType.MouseDown && current.type != EventType.TouchDown))
             {
                 return;
             }
@@ -179,23 +174,38 @@ namespace LiangTools.Debugging
             }
         }
 
-        // IMGUI coordinates start at the top-left, so the top band is small y.
+        /// <summary>
+        /// Hit test for the two corner zones, measured against the safe area rather than
+        /// the raw screen. The top strip of a phone screen is the status bar or the
+        /// notch: taps there are taken by the OS and never reach the game, which is what
+        /// made the gesture miss now and again on device.
+        ///
+        /// IMGUI coordinates start at the top-left; <see cref="Screen.safeArea"/> uses
+        /// screen coordinates starting at the bottom-left, hence the flip.
+        /// </summary>
         private static bool TryResolveCorner(Vector2 position, out ScreenCorner corner)
         {
             corner = default;
 
-            if (position.y > Screen.height * CornerHeightRatio)
+            var safe = Screen.safeArea;
+            var top = Screen.height - (safe.y + safe.height);
+            var bottom = top + safe.height * CornerHeightRatio;
+
+            if (position.y < top || position.y > bottom)
             {
                 return false;
             }
 
-            if (position.x <= Screen.width * CornerWidthRatio)
+            var zoneWidth = safe.width * CornerWidthRatio;
+
+            if (position.x >= safe.x && position.x <= safe.x + zoneWidth)
             {
                 corner = ScreenCorner.TopLeft;
                 return true;
             }
 
-            if (position.x >= Screen.width * (1f - CornerWidthRatio))
+            var right = safe.x + safe.width;
+            if (position.x <= right && position.x >= right - zoneWidth)
             {
                 corner = ScreenCorner.TopRight;
                 return true;
@@ -217,13 +227,11 @@ namespace LiangTools.Debugging
             _skin ??= new DebugSkin();
             _ui ??= new DebugUi(_skin);
 
+            HandleOpenKey(Event.current);
+
             if (!IsOpen)
             {
-                if (GestureEnabled)
-                {
-                    DetectOpenGesture(Event.current);
-                }
-
+                DetectOpenGesture(Event.current);
                 DrawFpsOverlay();
                 DrawHandle();
                 return;

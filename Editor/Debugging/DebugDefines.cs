@@ -8,14 +8,7 @@ namespace LiangTools.Editor.Debugging
 {
     public static class DebugDefines
     {
-        /// <summary>Compiles the overlay into non-development builds.</summary>
         public const string Symbol = "LIANG_TOOLS_DEBUG";
-
-        /// <summary>Always shows the on-screen button that opens the overlay.</summary>
-        public const string ButtonSymbol = "LIANG_TOOLS_DEBUG_BUTTON";
-
-        /// <summary>Turns off the corner tap sequence.</summary>
-        public const string NoGestureSymbol = "LIANG_TOOLS_DEBUG_NO_GESTURE";
 
         private static readonly NamedBuildTarget[] Targets =
         {
@@ -31,35 +24,17 @@ namespace LiangTools.Editor.Debugging
 
         public static bool IsEnabled(NamedBuildTarget target)
         {
-            return IsEnabled(target, Symbol);
-        }
-
-        public static bool IsEnabled(NamedBuildTarget target, string symbol)
-        {
-            return Read(target).Contains(symbol);
+            return Read(target).Contains(Symbol);
         }
 
         public static bool IsEnabledEverywhere()
         {
-            return IsEnabledEverywhere(Symbol);
-        }
-
-        public static bool IsEnabledEverywhere(string symbol)
-        {
-            return Targets.All(target => IsEnabled(target, symbol));
+            return Targets.All(IsEnabled);
         }
 
         public static bool IsEnabledAnywhere()
         {
-            return Targets.Any(target => IsEnabled(target, Symbol));
-        }
-
-        public static void SetEnabled(bool enabled, string symbol)
-        {
-            foreach (var target in Targets)
-            {
-                SetEnabled(target, enabled, symbol);
-            }
+            return Targets.Any(IsEnabled);
         }
 
         public static void SetEnabled(bool enabled)
@@ -72,24 +47,19 @@ namespace LiangTools.Editor.Debugging
 
         public static void SetEnabled(NamedBuildTarget target, bool enabled)
         {
-            SetEnabled(target, enabled, Symbol);
-        }
-
-        public static void SetEnabled(NamedBuildTarget target, bool enabled, string symbol)
-        {
             var symbols = Read(target);
-            if (enabled == symbols.Contains(symbol))
+            if (enabled == symbols.Contains(Symbol))
             {
                 return;
             }
 
             if (enabled)
             {
-                symbols.Add(symbol);
+                symbols.Add(Symbol);
             }
             else
             {
-                symbols.Remove(symbol);
+                symbols.Remove(Symbol);
             }
 
             try
