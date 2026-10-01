@@ -5,6 +5,20 @@ All notable changes to this package are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.11.1] - 2026-10-01
+
+### Fixed
+
+- The tap sequence was hard to get right on a phone and easy in the editor. Each
+  corner zone was a tenth of the safe area's width and height — about 7 mm wide
+  on a phone, the size of one small button — and a tap that missed was silently
+  ignored, so the next one broke the sequence without any sign of why. The zones
+  are now 45% of the width and 20% of the height, with the middle tenth of the
+  top strip left dead so the two corners cannot be confused.
+- At most one tap is taken per frame. `MouseDown` and `TouchDown` are both
+  accepted, and a platform reporting both for the same touch would have fed every
+  tap twice, which no sequence can match.
+
 ## [1.11.0] - 2026-10-01
 
 ### Changed

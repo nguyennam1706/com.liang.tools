@@ -7,8 +7,12 @@ namespace LiangTools.Debugging
     public sealed class DebugOverlay : MonoBehaviour
     {
         private const string ShowFpsKey = "LiangTools.Debug.ShowFps";
-        private const float CornerWidthRatio = 0.1f;
-        private const float CornerHeightRatio = 0.1f;
+        // Fractions of the safe area. A tenth of the width was about 7 mm on a phone,
+        // the size of a single small button, and a missed tap there is silent but
+        // breaks the sequence on the next one. The middle tenth stays dead so the two
+        // corners cannot be confused.
+        private const float CornerWidthRatio = 0.45f;
+        private const float CornerHeightRatio = 0.2f;
         private const string ShowHandleKey = "LiangTools.Debug.ShowHandle";
 
         private static DebugOverlay _instance;
@@ -22,6 +26,7 @@ namespace LiangTools.Debugging
         private int _pageIndex;
         private string _toast;
         private float _toastUntil;
+        private int _lastTapFrame = -1;
 
         public static DebugOverlay Instance => _instance;
 
@@ -160,6 +165,16 @@ namespace LiangTools.Debugging
             {
                 return;
             }
+
+            // Accepting both means a platform that reports both for one touch would feed
+            // the same tap twice, and a doubled tap can never match the sequence. Two real
+            // taps cannot land in the same frame, so one per frame loses nothing.
+            if (_lastTapFrame == Time.frameCount)
+            {
+                return;
+            }
+
+            _lastTapFrame = Time.frameCount;
 
             if (!TryResolveCorner(current.mousePosition, out var corner))
             {

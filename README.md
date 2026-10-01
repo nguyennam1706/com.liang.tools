@@ -178,12 +178,13 @@ carries no prefabs, scenes or art. It ships three pages and takes your own.
 Opening it, in Play mode:
 
 - Tap the **top-left corner once, the top-right corner twice, then the top-left
-  three times**, each tap within 2 seconds of the last. Only the two top corners
-  count — sized from `Screen.safeArea`, not the raw screen, so the zones sit
-  below the status bar or notch rather than under it — and
-  a tap anywhere else is ignored rather than breaking the sequence, so ordinary
-  play does not interfere. Taps are read from IMGUI events, so this works
-  whichever input backend the project uses.
+  three times**, each tap within 3 seconds of the last. Only the two top corners
+  count — each 45% of the width and 20% of the height of `Screen.safeArea`, not
+  the raw screen, so the zones sit below the status bar or notch rather than
+  under it — and a tap anywhere else, including the middle tenth of the top
+  strip, is ignored rather than breaking the sequence, so ordinary play does not
+  interfere. Taps are read from IMGUI events, at most one per frame, so this
+  works whichever input backend the project uses.
 - Press **M** — in Play mode and in a build alike. Pick a different key in
   **Project Settings → Liang Tools → Debug Overlay**; the choices are the bottom
   letter row, `Z X C V B N M`, plus `None` to switch it off. Code can still
