@@ -168,10 +168,16 @@ namespace LiangTools.Debugging
                 return;
             }
 
-            if (OpenGesture.Feed(corner, Time.unscaledTime))
+            if (!OpenGesture.Feed(corner, Time.unscaledTime))
             {
-                SetOpen(true);
+                return;
             }
+
+            // Getting the sequence right once is enough: from then on the button is
+            // there. The sequence exists to find the overlay on a device, not to be
+            // repeated every time it is wanted.
+            ShowHandle = true;
+            SetOpen(true);
         }
 
         /// <summary>

@@ -20,7 +20,7 @@ https://github.com/nguyennam1706/com.liang.tools.git
 Pin to a released version (recommended for production):
 
 ```
-https://github.com/nguyennam1706/com.liang.tools.git#v1.10.0
+https://github.com/nguyennam1706/com.liang.tools.git#v1.11.0
 ```
 
 The SSH remote `git@github.com:nguyennam1706/com.liang.tools.git` works too, and
@@ -35,7 +35,7 @@ Add the entry directly to `Packages/manifest.json`:
 ```json
 {
   "dependencies": {
-    "com.liang.tools": "https://github.com/nguyennam1706/com.liang.tools.git#v1.10.0"
+    "com.liang.tools": "https://github.com/nguyennam1706/com.liang.tools.git#v1.11.0"
   }
 }
 ```
@@ -191,8 +191,9 @@ Opening it, in Play mode:
   read through IMGUI, so it works under either input backend.
 - Press `Alt+D` in the editor, or use `Tools → Liang Tools → Debug Overlay`.
 - Call `LiangDebug.Toggle()` from your own code or your own input binding.
-- Turn on *Show a button to reopen this overlay* on the FPS page to keep a small
-  `≡` button in the top-right corner; the choice persists in `PlayerPrefs`.
+- Once the tap sequence has worked, a `≡` button appears in the top-right corner
+  and stays there, so the sequence is only needed to find the overlay the first
+  time. Turn it off again on the FPS page; the choice persists in `PlayerPrefs`.
 
 The chosen key is stored in `Assets/Resources/LiangToolsDebugSettings.asset`,
 created the first time you change it. It has to be an asset rather than a
@@ -341,8 +342,8 @@ Samples~/         Imported on demand via the Package Manager
 2. Commit, then tag and push:
 
 ```
-git tag v1.10.0
+git tag v1.11.0
 git push origin main --tags
 ```
 
-Consumers install that exact tag with `#v1.10.0`.
+Consumers install that exact tag with `#v1.11.0`.

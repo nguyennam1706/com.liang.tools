@@ -5,6 +5,16 @@ All notable changes to this package are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.11.0] - 2026-10-01
+
+### Changed
+
+- Opening the overlay with the tap sequence now turns the `≡` button on and
+  leaves it on. The sequence is there to find the overlay on a device the first
+  time, not to be repeated; previously the button could only be enabled from
+  inside the overlay, which meant getting the sequence right every time until you
+  remembered to do so. It can still be switched off on the FPS page.
+
 ## [1.10.0] - 2026-09-29
 
 ### Added
