@@ -5,6 +5,20 @@ All notable changes to this package are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.11.2] - 2026-10-06
+
+### Fixed
+
+- Overlay text was tiny in the Game view while looking correct in the Device
+  Simulator and on device. Every size is multiplied by a scale taken from
+  `Screen.dpi`, which in the Game view is the desktop monitor's — around 110,
+  clamped up to a scale of 1 — even though the view renders at phone resolution
+  and is then shrunk to fit the window, leaving 14px text at roughly 5px. A dpi
+  below the reference is now treated as a monitor rather than the thing being
+  rendered, and render height is used instead. A dpi above the reference belongs
+  to a real device and is left alone, so phones and tablets keep the sizes they
+  had; only the Game view and desktop builds change.
+
 ## [1.11.1] - 2026-10-01
 
 ### Fixed

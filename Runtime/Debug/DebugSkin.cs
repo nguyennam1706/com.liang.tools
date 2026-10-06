@@ -11,6 +11,7 @@ namespace LiangTools.Debugging
     internal sealed class DebugSkin
     {
         private const float ReferenceDpi = 160f;
+        private const float ReferenceHeight = 720f;
 
         private static readonly Color Ground = new Color(0.055f, 0.063f, 0.078f, 0.98f);
         private static readonly Color Panel = new Color(1f, 1f, 1f, 0.045f);
@@ -54,8 +55,17 @@ namespace LiangTools.Debugging
 
         public DebugSkin()
         {
-            var dpi = Screen.dpi > 1f ? Screen.dpi : ReferenceDpi;
-            _scale = Mathf.Clamp(dpi / ReferenceDpi, 1f, 3.5f);
+            // A dpi below the reference means the value almost certainly describes a
+            // desktop monitor rather than whatever is being rendered — the Game view
+            // reports the monitor's ~110 dpi while rendering at phone resolution and
+            // shrinking to fit, which left 14px text at roughly 5px on screen. Fall
+            // back to render height there. Above the reference the dpi is a real
+            // device's and is left alone, so phones and tablets keep the sizes they
+            // already had; the Device Simulator only looked right because it overrides
+            // Screen.dpi with the device's.
+            var dpiScale = Screen.dpi > 1f ? Screen.dpi / ReferenceDpi : 1f;
+            var scale = dpiScale >= 1f ? dpiScale : Screen.height / ReferenceHeight;
+            _scale = Mathf.Clamp(scale, 1f, 3.5f);
 
             var body = Round(14f);
             var small = Round(12f);
